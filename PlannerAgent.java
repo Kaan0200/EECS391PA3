@@ -91,19 +91,8 @@ public class PlannerAgent extends Agent {
      * @return The plan or null if no plan is found.
      */
     private Stack<StripsAction> AstarSearch(GameState startState) {
-    	
-    	HashSet<GameState> closedList = new HashSet<GameState>();
-    	//tack<GameState> astarPath = GetStarPath();
-    	
-    	startState.generateChildren();
-    	
-    	
         // TODO: Implement me!
         return null;
-    }
-    
-    private Stack<GameState> AstarInternal(GameState initialState) {
-     return null;	
     }
 
     /**
