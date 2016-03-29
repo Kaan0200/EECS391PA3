@@ -1,5 +1,20 @@
 package edu.cwru.sepia.agent.planner.actions;
 
-public class StripsMove {
+import edu.cwru.sepia.agent.planner.GameState;
+
+public class StripsMove implements StripsAction {
+
+	
+	@Override
+	public boolean preconditionsMet(GameState state) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public GameState apply(GameState state) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

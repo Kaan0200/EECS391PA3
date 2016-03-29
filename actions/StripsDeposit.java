@@ -4,6 +4,7 @@ import edu.cwru.sepia.agent.planner.GameState;
 
 public class StripsDeposit implements StripsAction{
 
+	
 	@Override
 	public boolean preconditionsMet(GameState state) {
 		// TODO Auto-generated method stub

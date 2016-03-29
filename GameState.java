@@ -43,7 +43,7 @@ public class GameState implements Comparable<GameState> {
 	// current food available from the townhall (default is 3)
 	public int townhallFood;
 	// actions took to get to this place
-	public List<StateAction> prerequisiteActions = null;
+	public List<StripsAction> prerequisiteActions = null;
 	public List<Peasant> peasants = null;
 	public List<Resource> resources = null;
 	//-------------------INTERNAL CLASSES-------------------//
@@ -60,21 +60,6 @@ public class GameState implements Comparable<GameState> {
 		public ResourceType type;
 		public Integer quantity;
 	}
-	public class StateAction implements StripsAction{
-
-		@Override
-		public boolean preconditionsMet(GameState state) {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public GameState apply(GameState state) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
-	}
 	
     /**
      * Construct a GameState from a stateview object. This is used to construct the initial search node. All other
@@ -87,7 +72,6 @@ public class GameState implements Comparable<GameState> {
      * @param buildPeasants True if the BuildPeasant action should be considered
      */
     public GameState(State.StateView state, int playernum, int requiredGold, int requiredWood, boolean buildPeasants) {
-        // TODO: Implement me!
     	// find and grab peasant
     	mapX = state.getXExtent();
     	mapY = state.getYExtent();
@@ -123,6 +107,33 @@ public class GameState implements Comparable<GameState> {
     		}
     	});
     }
+    
+    /**
+     * This is a constructor that will be the next game state with all the actions applied
+     * @param prevState
+     * @param actions
+     */
+    public GameState(GameState prevState, List<StripsAction> actions) {
+    	// peel off variables
+    	this.mapX = prevState.mapX;
+    	this.mapY = prevState.mapY;
+    	this.requiredGold = prevState.requiredGold;
+    	this.requiredWood = prevState.requiredWood;
+    	this.townhallPos = prevState.townhallPos;
+    	this.allowBuildPeasants = prevState.allowBuildPeasants;
+    	this.currentGold = prevState.currentGold;
+    	this.currentWood = prevState.currentWood;
+    	this.townhallFood = prevState.townhallFood;
+    	this.peasants = prevState.peasants;
+    	this.resources = prevState.resources;
+    	
+    	// save the actions that generated this change state
+    	this.prerequisiteActions = actions;
+    	// apply all actions
+    	for(StripsAction a : actions) {
+    		prevState = a.apply(prevState);
+    	}
+    }
 
     /**
      * Unlike in the first A* assignment there are many possible goal states. As long as the wood and gold requirements
@@ -149,8 +160,6 @@ public class GameState implements Comparable<GameState> {
     	// create return list
     	List<GameState> returnStates = new ArrayList<GameState>();
     	
-    	
-    	
     	Peasant p = peasants.get(0);
     	
         for(Direction d : Direction.values()) {
@@ -173,7 +182,7 @@ public class GameState implements Comparable<GameState> {
         		if (p.pos.move(d).equals(townhallPos)){
         			
         			if (p.holding != null) {
-        				StateAction newAction = new StateAction();
+        				
         				System.out.println("attempting to deposit into townhall :" + d.toString());
         			}
         		} else {
