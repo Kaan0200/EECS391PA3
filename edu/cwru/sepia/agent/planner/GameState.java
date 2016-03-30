@@ -51,6 +51,8 @@ public class GameState implements Comparable<GameState> {
 	public class Peasant {
 		public int id;
 		public Position pos;
+		public boolean nextToResource;
+		public boolean nextToTownhall;
 		public Pair<ResourceType, Integer> holding;
 	}
 	// class representing a resource and how much can be mined
@@ -101,7 +103,8 @@ public class GameState implements Comparable<GameState> {
     		} else { // creating peasant
     			Peasant newP = new Peasant();
     			newP.id = u.getID();
-    			newP.pos = new Position(u.getXPosition(), u.getYPosition());
+    			//newP.pos = new Position(u.getXPosition(), u.getYPosition());
+    			newP.nextToTownhall = true;
     			newP.holding = null;
     			peasants.add(newP);
     		}
@@ -159,14 +162,14 @@ public class GameState implements Comparable<GameState> {
     public List<GameState> generateChildren() {
 		// create return list
 		List<GameState> returnStates = new ArrayList<GameState>();
-	
 		ArrayList<ArrayList<StripsAction>> peasantActions = new ArrayList<ArrayList<StripsAction>>();
+		
 		int index = 0; //Index of the peasantActions
 	  	for (Peasant p : peasants) {
 	      // check if we even need to be looking for more resources
 	      if (p.holding != null) {
 	        // next to townhall?
-	        if (p.pos.isAdjacent(townhallPos)) {
+	        if (p.nextToTownhall) {
 	          //Create StripsDeposit object
 	        	StripsDeposit stripD = new StripsDeposit(p);
 	        	if(stripD.preconditionsMet(this)) {
@@ -175,26 +178,44 @@ public class GameState implements Comparable<GameState> {
 	        } else {
 	          // move back to be townhall
 	          //Create StripsMove to townhall
-	        	StripsMove stripM = new StripsMove(p, townhallPos);
+	        	StripsMove stripM = new StripsMove(p);
+	        	if(stripM.preconditionsMet(this)) {
+	        		peasantActions.get(index).add(stripM);
+	        	}
 	        }
 	      }
           //find nearest gold
-      	  Resource nearestGold = findNearestGold();
+      	  Resource nearestGold = findNearestGold(p);
 	      if(p.pos.isAdjacent(nearestGold.pos)) {
       		  //Create StripsCollect object
+	    	  StripsCollect stripGold = new StripsCollect(p, nearestGold);
+	    	  if(stripGold.preconditionsMet(this)) {
+	        		peasantActions.get(index).add(stripGold);
+	    	  }
       	  }
           //find nearest forest
-      	  Resource nearestWood = findNearestWood();
+      	  Resource nearestWood = findNearestWood(p);
 	      if(p.pos.isAdjacent(nearestWood.pos)) {
       		  //Create StripsCollect object
+	    	  StripsCollect stripWood = new StripsCollect(p, nearestWood);
+	    	  if(stripWood.preconditionsMet(this)) {
+	        		peasantActions.get(index).add(stripWood);
+	    	  }
       	  }
-	      
+	      index++;
 	        
 	    }
+	  	/* If resources and capacity allow for it, the action to create a new peasant will be treated as
+	  	 * the action of a separate peasant in peasantActions.  This will ensure that the creation of the new
+	  	 * peasant will be included in all possible child GameStates through combineStrips. */
 	    if (allowBuildPeasants) {
     		// check for the available resources
     		if ((townhallFood > 0) && (currentGold >= 400)){
     			// TODO: create new peasant
+    			StripsBuildPeasant stripBuild = new StripsBuildPeasant();
+    			if(stripBuild.preconditionsMet(this)) {
+	        		peasantActions.get(index).add(stripBuild);
+    			}
     		}
     	}
 	    //create a combinatorial list of StripsActions
@@ -202,19 +223,81 @@ public class GameState implements Comparable<GameState> {
 	    return returnStates;
     }
 
+    /**
+     * Returns a combinatorial list of GameStates based on all of the possible actions that the peasants can make.
+     * @param peasantActions
+     * @return
+     */
     private List<GameState> combineStrips(ArrayList<ArrayList<StripsAction>> peasantActions) {
-		// TODO Auto-generated method stub
-		return null;
+    	ArrayList<GameState> stateList = new ArrayList<>();
+    	ArrayList<StripsAction> actionsForOneState = new ArrayList<>();
+    	int solutions = 1;
+        for(int i = 0; i < peasantActions.size(); solutions *= peasantActions.get(i).size(), i++);
+        for(int i = 0; i < solutions; i++) {
+            int j = 1;
+            for(ArrayList<StripsAction> onePeasantActions : peasantActions) {
+                actionsForOneState.add(onePeasantActions.get((i/j)%onePeasantActions.size()));
+            	//System.out.print(onePeasantActions.get((i/j)%onePeasantActions.size()) + " ");
+                j *= onePeasantActions.size();
+            }
+            GameState newState = new GameState(this, actionsForOneState);
+            stateList.add(newState);
+        }
+		return stateList;
 	}
 
-	private Resource findNearestWood() {
-		// TODO Auto-generated method stub
-		return null;
+    /**
+     * Find the nearest forest resource to the given peasant
+     * @param p
+     * @return
+     */
+	private Resource findNearestWood(Peasant p) {
+		ArrayList<Pair<Resource,Double>> resourceDistances = new ArrayList<>();
+		for(Resource r : resources) {
+			if(r.type == ResourceType.WOOD && r.quantity > 0) {
+				resourceDistances.add(new Pair<Resource,Double>(r,r.pos.euclideanDistance(p.pos)));
+			}
+		}
+		//Find min distance
+		Resource nearestWood = null;
+		double minDist = Double.MAX_VALUE;
+		for(Pair<Resource,Double> pair : resourceDistances) {
+			if(pair.b < minDist) {
+				nearestWood = pair.a;
+				minDist = pair.b;
+			}
+		}
+		if(nearestWood == null) {
+			System.err.println("There don't appear to be any non-empty forests left!");
+		}
+		return nearestWood;
 	}
 
-	private Resource findNearestGold() {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * Find the nearest gold resource to the given peasant
+	 * @param p
+	 * @return
+	 */
+	private Resource findNearestGold(Peasant p) {
+		ArrayList<Pair<Resource,Double>> resourceDistances = new ArrayList<>();
+		for(Resource r : resources) {
+			if(r.type == ResourceType.GOLD && r.quantity > 0) {
+				resourceDistances.add(new Pair<Resource,Double>(r,r.pos.euclideanDistance(p.pos)));
+			}
+		}
+		//Find min distance
+		Resource nearestGold = null;
+		double minDist = Double.MAX_VALUE;
+		for(Pair<Resource,Double> pair : resourceDistances) {
+			if(pair.b < minDist) {
+				nearestGold = pair.a;
+				minDist = pair.b;
+			}
+		}
+		if(nearestGold == null) {
+			System.err.println("There don't appear to be any non-empty gold mines left!");
+		}
+		return nearestGold;
 	}
 
 	/**
@@ -283,7 +366,4 @@ public class GameState implements Comparable<GameState> {
     }
 }
 
-enum ResourceType {
-  GOLD,
-  WOOD
-}
+
