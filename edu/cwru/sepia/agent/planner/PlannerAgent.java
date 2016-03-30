@@ -178,11 +178,16 @@ public class PlannerAgent extends Agent {
      */
     private ArrayList<GameState> removeClosedList(ArrayList<GameState> stateList, HashSet<GameState> closedList) {
     	ArrayList<GameState> newStateList = new ArrayList<>();
-    	for(GameState closed: closedList) {
-    		for(GameState g: stateList) {
-    			if(!g.equals(closed)) {
-    				newStateList.add(g);
+    	for(GameState g: stateList) {
+    		boolean inClosed = false;
+    		for(GameState closed: closedList) {
+    			if(g.equals(closed)) {
+    				inClosed = true;
+    				break;
     			}
+    		}
+    		if(!inClosed) {
+    			newStateList.add(g);
     		}
     	}
     	return newStateList;
