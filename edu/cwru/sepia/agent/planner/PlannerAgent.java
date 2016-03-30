@@ -154,6 +154,8 @@ public class PlannerAgent extends Agent {
             for(Map.Entry<GameState, Double> m2 : sortedOptions) {
             	mClosedList.add(m2.getKey());
             }
+            
+            //Recurse
         	Stack<GameState> pathFromM = AstarInternal(m.getKey(), mClosedList);
         	if(pathFromM == null) {
         		continue; //Every possible path from m resulted in a dead end

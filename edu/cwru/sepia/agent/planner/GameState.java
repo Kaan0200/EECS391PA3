@@ -154,7 +154,7 @@ public class GameState implements Comparable<GameState> {
     		} else { // creating peasant
     			Peasant newP = new Peasant();
     			newP.id = u.getID();
-    			//newP.pos = new Position(u.getXPosition(), u.getYPosition());
+    			newP.pos = new Position(u.getXPosition(), u.getYPosition());
     			newP.nextToTownhall = true;
     			newP.holding = null;
     			peasants.add(newP);
@@ -177,6 +177,8 @@ public class GameState implements Comparable<GameState> {
     	this.currentGold = prevState.currentGold;
     	this.currentWood = prevState.currentWood;
     	this.townhallFood = prevState.townhallFood;
+    	peasants = new ArrayList<>();
+    	resources = new ArrayList<>();
     	for(Peasant p : prevState.peasants) {
     		this.peasants.add(new Peasant(p.id, p.pos, p.nextToResource, p.nextToTownhall, p.holding));
     	}
