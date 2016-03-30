@@ -208,7 +208,7 @@ public class GameState implements Comparable<GameState> {
 	        }
 	      }
           //find nearest gold
-      	  Resource nearestGold = findNearestGold(p);
+      	  Resource nearestGold = findNearestGold(p.pos);
 	      if(p.pos.isAdjacent(nearestGold.pos)) {
       		  //Create StripsCollect object
 	    	  StripsCollect stripGold = new StripsCollect(p, nearestGold);
@@ -217,7 +217,7 @@ public class GameState implements Comparable<GameState> {
 	    	  }
       	  }
           //find nearest forest
-      	  Resource nearestWood = findNearestWood(p);
+      	  Resource nearestWood = findNearestWood(p.pos);
 	      if(p.pos.isAdjacent(nearestWood.pos)) {
       		  //Create StripsCollect object
 	    	  StripsCollect stripWood = new StripsCollect(p, nearestWood);
@@ -279,11 +279,11 @@ public class GameState implements Comparable<GameState> {
      * @param p
      * @return
      */
-	private Resource findNearestWood(Peasant p) {
+	private Resource findNearestWood(Position p) {
 		ArrayList<Pair<Resource,Double>> resourceDistances = new ArrayList<>();
 		for(Resource r : resources) {
 			if(r.type == ResourceType.WOOD && r.quantity > 0) {
-				resourceDistances.add(new Pair<Resource,Double>(r,r.pos.euclideanDistance(p.pos)));
+				resourceDistances.add(new Pair<Resource,Double>(r,r.pos.euclideanDistance(p)));
 			}
 		}
 		//Find min distance
@@ -306,11 +306,11 @@ public class GameState implements Comparable<GameState> {
 	 * @param p
 	 * @return
 	 */
-	private Resource findNearestGold(Peasant p) {
+	private Resource findNearestGold(Position p) {
 		ArrayList<Pair<Resource,Double>> resourceDistances = new ArrayList<>();
 		for(Resource r : resources) {
 			if(r.type == ResourceType.GOLD && r.quantity > 0) {
-				resourceDistances.add(new Pair<Resource,Double>(r,r.pos.euclideanDistance(p.pos)));
+				resourceDistances.add(new Pair<Resource,Double>(r,r.pos.euclideanDistance(p)));
 			}
 		}
 		//Find min distance
@@ -337,8 +337,35 @@ public class GameState implements Comparable<GameState> {
      * @return The value estimated remaining cost to reach a goal state from this state.
      */
     public double heuristic() {
-        // TODO: Implement me!
-        return 0.0;
+    	//Estimate the number of trips it will take to transport the required amount of resource from the nearest
+    	//source to the townhall.  Multiply by 2 to account for round trips.
+    	double goldTrips = (requiredGold/(100 * peasants.size())) * 2;
+    	double goldCost = goldTrips * townhallPos.euclideanDistance(findNearestGold(townhallPos).pos);
+    	
+    	double woodTrips = (requiredWood/(100 * peasants.size())) * 2;
+    	double woodCost = woodTrips * townhallPos.euclideanDistance(findNearestWood(townhallPos).pos);
+    	
+    	//If any peasant is nearer to a resource than the distance between the townhall and that resource, let it count in the agent's favor
+    	double nearToResource = 0;
+    	
+    	for(Peasant p : peasants) {
+    		//If the peasant is holding a resource and is nextToTownhall, ready to deposit, then subtract a roundtrip from the cost to that resource
+    		//Actually, subtract ALMOST a full roundtrip.  Depositing will actually reduce by a full roundtrip.
+    		if(p.holding != null && p.nextToTownhall) {
+    			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
+    			if(p.holding.a == ResourceType.GOLD) {
+    				goldCost -= 1.5 * townhallPos.euclideanDistance(findNearestGold(townhallPos).pos);
+    			}
+    			else if(p.holding.a == ResourceType.WOOD) {
+    				woodCost -= 1.5 * townhallPos.euclideanDistance(findNearestWood(townhallPos).pos);
+    			}
+    		}
+    		//Assume that the peasant will move toward whichever resource wood/gold is nearer, and use that distance to get a higher nearest resource value
+    		double pNearestResource = Math.max(townhallPos.euclideanDistance(findNearestWood(townhallPos).pos) - p.pos.euclideanDistance(findNearestWood(townhallPos).pos),
+    				townhallPos.euclideanDistance(findNearestGold(townhallPos).pos) - p.pos.euclideanDistance(findNearestGold(townhallPos).pos));
+    		nearToResource += pNearestResource;
+    	}
+        return goldCost + woodCost - nearToResource;
     }
 
     /**
