@@ -1,6 +1,6 @@
 package edu.cwru.sepia.agent.planner;
 
-import edu.cwru.sepia.agent.planner.actions.StripsAction;
+import edu.cwru.sepia.agent.planner.actions.*;
 import edu.cwru.sepia.environment.model.state.ResourceNode;
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.util.Pair;
@@ -94,7 +94,7 @@ public class GameState implements Comparable<GameState> {
     		newR.type = (n.getType() == ResourceNode.Type.TREE ? ResourceType.WOOD : ResourceType.GOLD);
     		resources.add(newR);
     	});
-    	state.getAllUnits().forEach((u) ->{
+    	state.getAllUnits().forEach((u) -> {
     		// is actually townhall
     		if (u.getTemplateView().getName().equals("TownHall")) {
     			townhallPos = new Position(u.getXPosition(), u.getYPosition());
@@ -157,55 +157,67 @@ public class GameState implements Comparable<GameState> {
      * @return A list of the possible successor states and their associated actions
      */
     public List<GameState> generateChildren() {
-    	// create return list
-    	List<GameState> returnStates = new ArrayList<GameState>();
-    	
-    	Peasant p = peasants.get(0);
-    	
-        for(Direction d : Direction.values()) {
-        	// check to make sure direction is in bounds
-        	if (p.pos.move(d).inBounds(mapX, mapY)){
-        		// check that it is not a resource
-        		for(Resource r : resources){
-        			if (r.pos == p.pos.move(d)){
-        				// the move would put him on a resource
-        				if (p.holding == null) {
-        					// holding nothing so, farm from it.
-        					
-        					//-----------------------
-        					System.out.println("attempting to harvest");
-        					
-        				}
-        			}
-        		}
-        		// check if attempting to move into townhall
-        		if (p.pos.move(d).equals(townhallPos)){
-        			
-        			if (p.holding != null) {
-        				
-        				System.out.println("attempting to deposit into townhall :" + d.toString());
-        			}
-        		} else {
-        			// not trying to move into townhall or resource, so just movement
-        			
-        			//-----------------------
-        			System.out.println("Moving in direction :" + d.toString());
-        		}
-        	}
-        }
-
-    	if (allowBuildPeasants) {
+		// create return list
+		List<GameState> returnStates = new ArrayList<GameState>();
+	
+		ArrayList<ArrayList<StripsAction>> peasantActions = new ArrayList<ArrayList<StripsAction>>();
+		int index = 0; //Index of the peasantActions
+	  	for (Peasant p : peasants) {
+	      // check if we even need to be looking for more resources
+	      if (p.holding != null) {
+	        // next to townhall?
+	        if (p.pos.isAdjacent(townhallPos)) {
+	          //Create StripsDeposit object
+	        	StripsDeposit stripD = new StripsDeposit(p);
+	        	if(stripD.preconditionsMet(this)) {
+	        		peasantActions.get(index).add(stripD);
+	        	}
+	        } else {
+	          // move back to be townhall
+	          //Create StripsMove to townhall
+	        	StripsMove stripM = new StripsMove(p, townhallPos);
+	        }
+	      }
+          //find nearest gold
+      	  Resource nearestGold = findNearestGold();
+	      if(p.pos.isAdjacent(nearestGold.pos)) {
+      		  //Create StripsCollect object
+      	  }
+          //find nearest forest
+      	  Resource nearestWood = findNearestWood();
+	      if(p.pos.isAdjacent(nearestWood.pos)) {
+      		  //Create StripsCollect object
+      	  }
+	      
+	        
+	    }
+	    if (allowBuildPeasants) {
     		// check for the available resources
     		if ((townhallFood > 0) && (currentGold >= 400)){
     			// TODO: create new peasant
     		}
     	}
-    	
-
-        return returnStates;
+	    //create a combinatorial list of StripsActions
+	    returnStates = combineStrips(peasantActions);
+	    return returnStates;
     }
 
-    /**
+    private List<GameState> combineStrips(ArrayList<ArrayList<StripsAction>> peasantActions) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private Resource findNearestWood() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private Resource findNearestGold() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
      * Write your heuristic function here. Remember this must be admissible for the properties of A* to hold. If you
      * can come up with an easy way of computing a consistent heuristic that is even better, but not strictly necessary.
      *
@@ -227,6 +239,7 @@ public class GameState implements Comparable<GameState> {
      */
     public double getCost() {
         // TODO: Implement me!
+    	//Pretty much 1 unless it's a move, and if it is, then some rough approximation of how far you had to move
         return 0.0;
     }
 

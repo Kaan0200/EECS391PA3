@@ -43,7 +43,7 @@ public class PlannerAgent extends Agent {
 
         if(plan == null) {
             System.err.println("No plan was found");
-            System.exit(1);
+            //System.exit(1);
             return null;
         }
 
@@ -93,7 +93,7 @@ public class PlannerAgent extends Agent {
     private Stack<StripsAction> AstarSearch(GameState startState) {
     	
     	HashSet<GameState> closedList = new HashSet<GameState>();
-    	//tack<GameState> astarPath = GetStarPath();
+    	//Stack<GameState> astarPath = GetStarPath();
     	
     	startState.generateChildren();
     	
