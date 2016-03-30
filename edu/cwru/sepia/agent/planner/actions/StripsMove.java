@@ -71,7 +71,8 @@ public class StripsMove implements StripsAction {
 			return "MOVE P" + mover.id + " TO TOWNHALL";
 		}
 		else {
-			return "MOVE P" + mover.id + " TO " + location.type + location.id;
+			return "MOVE P" + mover.id + " TO " + location.type + location.id + 
+					" X: " + location.pos.x + " Y: " + location.pos.y;
 		}
 	}
 }

@@ -241,7 +241,7 @@ public class GameState implements Comparable<GameState> {
 		      }
 	          //find nearest gold
 	      	  Resource nearestGold = findNearestGold(p.pos);
-		      if(p.nextToGold) {
+		      if(p.holding == null && p.nextToGold) {
 	      		  //Create StripsCollect object
 		    	  StripsCollect stripCollectGold = new StripsCollect(p, nearestGold);
 		    	  if(stripCollectGold.preconditionsMet(this)) {
@@ -257,7 +257,7 @@ public class GameState implements Comparable<GameState> {
 		      }
 	          //find nearest forest
 	      	  Resource nearestWood = findNearestWood(p.pos);
-		      if(p.nextToWood) {
+		      if(p.holding == null && p.nextToWood) {
 	      		  //Create StripsCollect object
 		    	  StripsCollect stripCollectWood = new StripsCollect(p, nearestWood);
 		    	  if(stripCollectWood.preconditionsMet(this)) {
