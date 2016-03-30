@@ -32,4 +32,9 @@ public class StripsCollect implements StripsAction {
 		collection.quantity = collection.quantity-100;
 		return state;
 	}
+	
+	@Override
+	public String toString() {
+		return "COLLECT P" + collector.id + " " + collection.type + " " + collector.holding.b;
+	}
 }

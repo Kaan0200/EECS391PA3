@@ -6,7 +6,7 @@ import edu.cwru.sepia.agent.planner.GameState.*;
 public class StripsMove implements StripsAction {
 	
 	public Peasant mover;
-	public Object location;
+	public Resource location;
 	
 	/**
 	 * constructor for moving to a specific resource
@@ -53,5 +53,15 @@ public class StripsMove implements StripsAction {
 		}
 
 		return state;
+	}
+	
+	@Override
+	public String toString() {
+		if(location == null) {
+			return "MOVE P" + mover.id + " TO TOWNHALL";
+		}
+		else {
+			return "MOVE P" + mover.id + " TO " + location.type + location.id;
+		}
 	}
 }

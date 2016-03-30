@@ -37,4 +37,9 @@ public class StripsDeposit implements StripsAction{
 		}
 		return state;
 	}
+	
+	@Override
+	public String toString() {
+		return "DEPOSIT P" + depositer.id + " " + depositer.holding.a + " TO TOWNHALL";
+	}
 }

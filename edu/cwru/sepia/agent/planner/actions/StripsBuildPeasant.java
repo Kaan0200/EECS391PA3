@@ -27,5 +27,10 @@ public class StripsBuildPeasant implements StripsAction {
 		return state;
 		
 	}
+	
+	@Override
+	public String toString() {
+		return "BUILD NEW PEASANT"; 
+	}
 
 }

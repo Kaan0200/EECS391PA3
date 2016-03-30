@@ -37,4 +37,11 @@ public interface StripsAction {
      * @return State resulting from successful action appliction.
      */
     public GameState apply(GameState state);
+    
+    /**
+     * We need to return a readable message for each Strips action
+     * @return
+     */
+    @Override
+    public String toString();
 }
