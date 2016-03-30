@@ -39,7 +39,8 @@ public class PlannerAgent extends Agent {
     @Override
     public Map<Integer, Action> initialStep(State.StateView stateView, History.HistoryView historyView) {
 
-        Stack<StripsAction> plan = AstarSearch(new GameState(stateView, playernum, requiredGold, requiredWood, buildPeasants));
+    	GameState startState = new GameState(stateView, playernum, requiredGold, requiredWood, buildPeasants);
+        Stack<StripsAction> plan = AstarSearch(startState);
 
         if(plan == null) {
             System.err.println("No plan was found");
@@ -93,17 +94,92 @@ public class PlannerAgent extends Agent {
     private Stack<StripsAction> AstarSearch(GameState startState) {
     	
     	HashSet<GameState> closedList = new HashSet<GameState>();
-    	//Stack<GameState> astarPath = GetStarPath();
+    	Stack<GameState> astarPath = AstarInternal(startState, closedList);
     	
-    	startState.generateChildren();
+    	
     	
     	
         // TODO: Implement me!
         return null;
     }
     
-    private Stack<GameState> AstarInternal(GameState initialState) {
-     return null;	
+    private Stack<GameState> AstarInternal(GameState initialState, HashSet<GameState> closedList) {
+    	//Get the possible choices
+    	ArrayList<GameState> stateList = (ArrayList<GameState>) initialState.generateChildren();
+    	
+    	//Remove states that are in the closedList
+    	stateList = removeClosedList(stateList, closedList);
+    	
+    	//Populate mapping of GameStates and A* cost
+    	HashMap<GameState, Double> heuristicCosts = new HashMap<>();
+    	for(GameState g : stateList) {
+    		heuristicCosts.put(g, g.heuristic() + g.getCost());
+    	}
+    	
+    	if(heuristicCosts.isEmpty()) {
+    		//System.out.println("No more good moves from this state")
+    		return null;
+    	}
+    	
+    	//Sort children by cost + heuristic
+    	ArrayList<Map.Entry<GameState, Double>> sortedOptions = sortHashMap(heuristicCosts);
+    	
+    	//Recurse
+    	closedList.add(initialState);
+    	
+    	//For each of the viable options from this node, try to find a path to the goal starting from the most promising cell and work down.
+        for(Map.Entry<GameState, Double> m : sortedOptions) {
+        	//Is m the goal? If so, return a path that ends in this cell, as the cell NEXT to the goal is the real final destination for the stack
+        	if(m.getKey().isGoal()) {
+            	Stack<GameState> path = new Stack<>();
+            	path.push(initialState);
+            	return path;
+            }
+            
+        	//System.out.println("Expanding: (" + m.getKey().x + "," + m.getKey().y + ",  " + m.getValue() + ")");
+            HashSet<GameState> mClosedList = (HashSet<GameState>) closedList.clone();
+         
+            //Add all currently reachable cells to the closed list so that only paths which strictly could not be reached any quicker are considered.
+            for(Map.Entry<GameState, Double> m2 : sortedOptions) {
+            	mClosedList.add(m2.getKey());
+            }
+        	Stack<GameState> pathFromM = AstarInternal(m.getKey(), mClosedList);
+        	if(pathFromM == null) {
+        		continue; //Every possible path from m resulted in a dead end
+        	}
+        	else {
+        		//This was a good path- add yourself to the path and return. *Means that we'll have to pop the stack once to get rid of the start for the finished path!*
+        		pathFromM.push(initialState);
+        		return pathFromM;
+        	}
+        }
+    	
+    	return null;
+    }
+    
+    private ArrayList<GameState> removeClosedList(ArrayList<GameState> statelist, HashSet<GameState> closedList) {
+    	ArrayList<GameState> newStateList = new ArrayList<>();
+    	for(GameState closed: closedList) {
+    		for(GameState g: statelist) {
+    			if(!g.equals(closed)) {
+    				newStateList.add(g);
+    			}
+    		}
+    	}
+    	return newStateList;
+    }
+    
+    private ArrayList<Map.Entry<GameState, Double>> sortHashMap (HashMap<GameState, Double> heuristicCosts) {
+    	ArrayList<Map.Entry<GameState, Double>> sortedOptions = new ArrayList<Map.Entry<GameState, Double>>((Collection) heuristicCosts.entrySet());
+        Collections.sort( sortedOptions, new Comparator<Map.Entry<GameState, Double>>()
+        {
+            @Override
+            public int compare( Map.Entry<GameState, Double> opt1, Map.Entry<GameState, Double> opt2 )
+            {
+                return ((opt1.getValue()).compareTo( opt2.getValue() )); //Remember, smaller values are supposed to be more optimal!
+            }
+        } );
+        return sortedOptions;
     }
 
     /**

@@ -68,6 +68,19 @@ public class GameState implements Comparable<GameState> {
 		public Peasant() {
 			//this(null, null, null, null, null);
 		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if(!(o instanceof Peasant)) return false;
+			else {
+				Peasant other = (Peasant) o;
+				boolean same = this.id == other.id &&
+						this.pos.equals(other.pos) &&
+						this.nextToResource == other.nextToResource &&
+						this.nextToTownhall == other.nextToTownhall;
+				return same;
+			}
+		}
 	}
 	// class representing a resource and how much can be mined
 	public class Resource {
@@ -85,6 +98,19 @@ public class GameState implements Comparable<GameState> {
 		
 		public Resource() {
 			
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if(!(o instanceof Resource)) return false;
+			else {
+				Resource other = (Resource) o;
+				boolean same = this.id == other.id &&
+						this.pos.equals(other.pos) &&
+						this.type == other.type &&
+						this.quantity == other.quantity;
+				return same;
+			}
 		}
 	}
 	
@@ -157,7 +183,6 @@ public class GameState implements Comparable<GameState> {
     	for(Resource r : prevState.resources) {
     		this.resources.add(new Resource(r.id, r.pos, r.type, r.quantity));
     	}
-    	this.resources = prevState.resources;
     }
     
 
@@ -253,6 +278,7 @@ public class GameState implements Comparable<GameState> {
      */
     private List<GameState> combineStrips(ArrayList<ArrayList<StripsAction>> peasantActions) {
     	ArrayList<GameState> stateList = new ArrayList<>();
+    	//TODO This object right now, a list of actionsForOneState will need to be consolidated into StripsMove_k and the like
     	ArrayList<StripsAction> actionsForOneState = new ArrayList<>();
     	int solutions = 1;
         for(int i = 0; i < peasantActions.size(); solutions *= peasantActions.get(i).size(), i++);
@@ -339,10 +365,10 @@ public class GameState implements Comparable<GameState> {
     public double heuristic() {
     	//Estimate the number of trips it will take to transport the required amount of resource from the nearest
     	//source to the townhall.  Multiply by 2 to account for round trips.
-    	double goldTrips = (requiredGold/(100 * peasants.size())) * 2;
+    	double goldTrips = ((requiredGold-currentGold)/(100 * peasants.size())) * 2;
     	double goldCost = goldTrips * townhallPos.euclideanDistance(findNearestGold(townhallPos).pos);
     	
-    	double woodTrips = (requiredWood/(100 * peasants.size())) * 2;
+    	double woodTrips = ((requiredWood-currentWood)/(100 * peasants.size())) * 2;
     	double woodCost = woodTrips * townhallPos.euclideanDistance(findNearestWood(townhallPos).pos);
     	
     	//If any peasant is nearer to a resource than the distance between the townhall and that resource, let it count in the agent's favor
@@ -402,8 +428,50 @@ public class GameState implements Comparable<GameState> {
     public boolean equals(Object o) {
     	// check for gamestates only
     	if (!(o instanceof GameState)) return false;
-        // TODO: Implement me!
-        return false;
+        
+    	else {
+    		GameState other = (GameState) o;
+    		boolean same = this.mapX == other.mapX &&
+	        	this.mapY == other.mapY &&
+	        	this.requiredGold == other.requiredGold &&
+	        	this.requiredWood == other.requiredWood &&
+	        	this.townhallPos == other.townhallPos &&
+	        	this.allowBuildPeasants == other.allowBuildPeasants &&
+	        	this.currentGold == other.currentGold &&
+	        	this.currentWood == other.currentWood &&
+	        	this.townhallFood == other.townhallFood;
+    		if(same) {
+	        	for(Peasant p : this.peasants) {
+	        		boolean peasantFound = false;
+	        		for(Peasant otherP : other.peasants) {
+	        			if(p.equals(otherP)) {
+	        				peasantFound = true;
+	        				break;
+	        			}
+	        		}
+	        		if(!peasantFound) {
+	        			same = false;
+	        			break;
+	        		}
+	        	}
+    		}
+    		if(same) {
+	        	for(Resource r : this.resources) {
+	        		boolean resourceFound = false;
+	        		for(Resource otherR : other.resources) {
+	        			if(r.equals(otherR)) {
+	        				resourceFound = true;
+	        				break;
+	        			}
+	        		}
+	        		if(!resourceFound) {
+	        			same = false;
+	        			break;
+	        		}
+	        	}
+    		}
+    		return same;
+    	}
     }
 
     /**
