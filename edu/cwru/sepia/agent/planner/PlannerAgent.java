@@ -96,13 +96,24 @@ public class PlannerAgent extends Agent {
     	HashSet<GameState> closedList = new HashSet<GameState>();
     	Stack<GameState> astarPath = AstarInternal(startState, closedList);
     	
-    	
-    	
+    	System.out.println("------STRIPS Plan------");
+    	for(GameState g: astarPath) {
+    		for(StripsAction a : g.prerequisiteActions) {
+    			System.out.println(a.toString());
+    		}
+    	}
+    	System.out.println("-----------------------");
     	
         // TODO: Implement me!
         return null;
     }
     
+    /**
+     * The internal, recursive method for Astar Search
+     * @param initialState - Want to find the 'path' of states from here to the goal
+     * @param closedList - A set of GameStates that have already been considered, so they shouldn't be considered for the future
+     * @return
+     */
     private Stack<GameState> AstarInternal(GameState initialState, HashSet<GameState> closedList) {
     	//Get the possible choices
     	ArrayList<GameState> stateList = (ArrayList<GameState>) initialState.generateChildren();
@@ -157,10 +168,16 @@ public class PlannerAgent extends Agent {
     	return null;
     }
     
-    private ArrayList<GameState> removeClosedList(ArrayList<GameState> statelist, HashSet<GameState> closedList) {
+    /**
+     * Remove all GameStates in the closedList from the given stateList, and return the new stateList
+     * @param stateList
+     * @param closedList
+     * @return
+     */
+    private ArrayList<GameState> removeClosedList(ArrayList<GameState> stateList, HashSet<GameState> closedList) {
     	ArrayList<GameState> newStateList = new ArrayList<>();
     	for(GameState closed: closedList) {
-    		for(GameState g: statelist) {
+    		for(GameState g: stateList) {
     			if(!g.equals(closed)) {
     				newStateList.add(g);
     			}
@@ -169,6 +186,11 @@ public class PlannerAgent extends Agent {
     	return newStateList;
     }
     
+    /**
+     * Sort the given HashMap<GameState, Double> by the values so that the minimum values are first (I believe)
+     * @param heuristicCosts
+     * @return
+     */
     private ArrayList<Map.Entry<GameState, Double>> sortHashMap (HashMap<GameState, Double> heuristicCosts) {
     	ArrayList<Map.Entry<GameState, Double>> sortedOptions = new ArrayList<Map.Entry<GameState, Double>>((Collection) heuristicCosts.entrySet());
         Collections.sort( sortedOptions, new Comparator<Map.Entry<GameState, Double>>()
