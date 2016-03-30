@@ -102,7 +102,20 @@ public class PEAgent extends Agent {
      * @return SEPIA representation of same action
      */
     private Action createSepiaAction(StripsAction action) {
-        return null;
+        if(action instanceof StripsMove){
+        	//return Action.createCompoundMove((StripsMove) 
+        	return null;
+        } else if (action instanceof StripsCollect){
+        	return null;
+        } else if (action instanceof StripsDeposit){
+        	return null;
+        } else if (action instanceof StripsBuildPeasant){
+        	return null;
+        } else {
+        	System.err.println("Unhandled attempt to convert STRIPS action to SEPIA action");
+        	return null;
+        }
+
     }
 
     @Override

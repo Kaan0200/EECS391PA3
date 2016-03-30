@@ -50,7 +50,8 @@ public class GameState implements Comparable<GameState> {
 	// class representing a peasant and what they are holding
 	public class Peasant {
 		public int id;
-		public Position pos;
+		public boolean nextToResource;
+		public boolean nextToTownhall;
 		public Pair<ResourceType, Integer> holding;
 	}
 	// class representing a resource and how much can be mined
@@ -101,7 +102,8 @@ public class GameState implements Comparable<GameState> {
     		} else { // creating peasant
     			Peasant newP = new Peasant();
     			newP.id = u.getID();
-    			newP.pos = new Position(u.getXPosition(), u.getYPosition());
+    			//newP.pos = new Position(u.getXPosition(), u.getYPosition());
+    			newP.nextToTownhall = true;
     			newP.holding = null;
     			peasants.add(newP);
     		}
@@ -160,8 +162,10 @@ public class GameState implements Comparable<GameState> {
     	// create return list
     	List<GameState> returnStates = new ArrayList<GameState>();
     	
-    	Peasant p = peasants.get(0);
     	
+    	
+    	
+    	/**
         for(Direction d : Direction.values()) {
         	// check to make sure direction is in bounds
         	if (p.pos.move(d).inBounds(mapX, mapY)){
@@ -183,6 +187,7 @@ public class GameState implements Comparable<GameState> {
         			
         			if (p.holding != null) {
         				
+        				//-------------------
         				System.out.println("attempting to deposit into townhall :" + d.toString());
         			}
         		} else {
@@ -192,7 +197,9 @@ public class GameState implements Comparable<GameState> {
         			System.out.println("Moving in direction :" + d.toString());
         		}
         	}
-        }
+        }**/
+
+        
 
     	if (allowBuildPeasants) {
     		// check for the available resources
