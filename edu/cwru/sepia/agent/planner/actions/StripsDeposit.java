@@ -37,6 +37,7 @@ public class StripsDeposit implements StripsAction{
 		}
 		
 		state.cost++;
+		state.prerequisiteActions.add(this);
 		return state;
 	}
 	

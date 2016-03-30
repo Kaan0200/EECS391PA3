@@ -132,7 +132,7 @@ public class GameState implements Comparable<GameState> {
     	this.requiredWood = requiredWood;
     	allowBuildPeasants = buildPeasants;
     	// set all the fields to clean values, we know they will all be empty;
-    	prerequisiteActions = null;
+    	prerequisiteActions = new ArrayList<StripsAction>();
     	currentGold = 0;
     	currentWood = 0;
     	townhallFood = 3;
@@ -185,6 +185,7 @@ public class GameState implements Comparable<GameState> {
     	for(Resource r : prevState.resources) {
     		this.resources.add(new Resource(r.id, r.pos, r.type, r.quantity));
     	}
+    	prerequisiteActions = new ArrayList<StripsAction>();
     }
     
 
@@ -216,57 +217,58 @@ public class GameState implements Comparable<GameState> {
 		
 		int index = 0; //Index of the peasantActions
 	  	for (Peasant p : peasants) {
-	      // check if we even need to be looking for more resources
-	      if (p.holding != null) {
-	        // next to townhall?
-	        if (p.nextToTownhall) {
-	          //Create StripsDeposit object
-	        	StripsDeposit stripD = new StripsDeposit(p);
-	        	if(stripD.preconditionsMet(this)) {
-	        		peasantActions.get(index).add(stripD);
-	        	}
-	        } else {
-	          // move back to be townhall
-	          //Create StripsMove to townhall
-	        	StripsMove stripM = new StripsMove(p);
-	        	if(stripM.preconditionsMet(this)) {
-	        		peasantActions.get(index).add(stripM);
-	        	}
-	        }
-	      }
-          //find nearest gold
-      	  Resource nearestGold = findNearestGold(p.pos);
-	      if(p.pos.isAdjacent(nearestGold.pos)) {
-      		  //Create StripsCollect object
-	    	  StripsCollect stripCollectGold = new StripsCollect(p, nearestGold);
-	    	  if(stripCollectGold.preconditionsMet(this)) {
-	        		peasantActions.get(index).add(stripCollectGold);
-	    	  }
-      	  }
-	      else {
-	    	  //Create StripsMove object
-	    	  StripsMove stripMoveGold = new StripsMove(p,nearestGold);
-	    	  if(stripMoveGold.preconditionsMet(this)) {
-	    		  peasantActions.get(index).add(stripMoveGold);
-	    	  }
-	      }
-          //find nearest forest
-      	  Resource nearestWood = findNearestWood(p.pos);
-	      if(p.pos.isAdjacent(nearestWood.pos)) {
-      		  //Create StripsCollect object
-	    	  StripsCollect stripCollectWood = new StripsCollect(p, nearestWood);
-	    	  if(stripCollectWood.preconditionsMet(this)) {
-	        		peasantActions.get(index).add(stripCollectWood);
-	    	  }
-      	  }
-	      else {
-	    	  //Create StripsMove object
-	    	  StripsMove stripMoveWood = new StripsMove(p,nearestWood);
-	    	  if(stripMoveWood.preconditionsMet(this)) {
-	    		  peasantActions.get(index).add(stripMoveWood);
-	    	  }
-	      }
-	      index++;
+	  		peasantActions.add(new ArrayList<StripsAction>());
+		      // check if we even need to be looking for more resources
+		      if (p.holding != null) {
+		        // next to townhall?
+		        if (p.nextToTownhall) {
+		          //Create StripsDeposit object
+		        	StripsDeposit stripD = new StripsDeposit(p);
+		        	if(stripD.preconditionsMet(this)) {
+		        		peasantActions.get(index).add(stripD);
+		        	}
+		        } else {
+		          // move back to be townhall
+		          //Create StripsMove to townhall
+		        	StripsMove stripM = new StripsMove(p);
+		        	if(stripM.preconditionsMet(this)) {
+		        		peasantActions.get(index).add(stripM);
+		        	}
+		        }
+		      }
+	          //find nearest gold
+	      	  Resource nearestGold = findNearestGold(p.pos);
+		      if(p.pos.isAdjacent(nearestGold.pos)) {
+	      		  //Create StripsCollect object
+		    	  StripsCollect stripCollectGold = new StripsCollect(p, nearestGold);
+		    	  if(stripCollectGold.preconditionsMet(this)) {
+		        		peasantActions.get(index).add(stripCollectGold);
+		    	  }
+	      	  }
+		      else {
+		    	  //Create StripsMove object
+		    	  StripsMove stripMoveGold = new StripsMove(p,nearestGold);
+		    	  if(stripMoveGold.preconditionsMet(this)) {
+		    		  peasantActions.get(index).add(stripMoveGold);
+		    	  }
+		      }
+	          //find nearest forest
+	      	  Resource nearestWood = findNearestWood(p.pos);
+		      if(p.pos.isAdjacent(nearestWood.pos)) {
+	      		  //Create StripsCollect object
+		    	  StripsCollect stripCollectWood = new StripsCollect(p, nearestWood);
+		    	  if(stripCollectWood.preconditionsMet(this)) {
+		        		peasantActions.get(index).add(stripCollectWood);
+		    	  }
+	      	  }
+		      else {
+		    	  //Create StripsMove object
+		    	  StripsMove stripMoveWood = new StripsMove(p,nearestWood);
+		    	  if(stripMoveWood.preconditionsMet(this)) {
+		    		  peasantActions.get(index).add(stripMoveWood);
+		    	  }
+		      }
+		      index++;
 	        
 	    }
 	  	/* If resources and capacity allow for it, the action to create a new peasant will be treated as

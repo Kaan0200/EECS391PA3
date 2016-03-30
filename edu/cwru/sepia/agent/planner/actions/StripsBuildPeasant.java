@@ -24,6 +24,7 @@ public class StripsBuildPeasant implements StripsAction {
 		
 		state.peasants.add(state.new Peasant());
 		//Assume that this has no cost for now
+		state.prerequisiteActions.add(this);
 		return state;
 		
 	}
