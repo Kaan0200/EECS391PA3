@@ -197,7 +197,7 @@ public class GameState implements Comparable<GameState> {
      */
     public boolean isGoal() {
     	// do we have the required gold and wood?
-        if ((requiredGold == currentGold) && (requiredWood == currentWood)) {
+        if ((requiredGold <= currentGold) && (requiredWood <= currentWood)) {
         	return true;
         }
         return false;
@@ -238,20 +238,34 @@ public class GameState implements Comparable<GameState> {
       	  Resource nearestGold = findNearestGold(p.pos);
 	      if(p.pos.isAdjacent(nearestGold.pos)) {
       		  //Create StripsCollect object
-	    	  StripsCollect stripGold = new StripsCollect(p, nearestGold);
-	    	  if(stripGold.preconditionsMet(this)) {
-	        		peasantActions.get(index).add(stripGold);
+	    	  StripsCollect stripCollectGold = new StripsCollect(p, nearestGold);
+	    	  if(stripCollectGold.preconditionsMet(this)) {
+	        		peasantActions.get(index).add(stripCollectGold);
 	    	  }
       	  }
+	      else {
+	    	  //Create StripsMove object
+	    	  StripsMove stripMoveGold = new StripsMove(p,nearestGold);
+	    	  if(stripMoveGold.preconditionsMet(this)) {
+	    		  peasantActions.get(index).add(stripMoveGold);
+	    	  }
+	      }
           //find nearest forest
       	  Resource nearestWood = findNearestWood(p.pos);
 	      if(p.pos.isAdjacent(nearestWood.pos)) {
       		  //Create StripsCollect object
-	    	  StripsCollect stripWood = new StripsCollect(p, nearestWood);
-	    	  if(stripWood.preconditionsMet(this)) {
-	        		peasantActions.get(index).add(stripWood);
+	    	  StripsCollect stripCollectWood = new StripsCollect(p, nearestWood);
+	    	  if(stripCollectWood.preconditionsMet(this)) {
+	        		peasantActions.get(index).add(stripCollectWood);
 	    	  }
       	  }
+	      else {
+	    	  //Create StripsMove object
+	    	  StripsMove stripMoveWood = new StripsMove(p,nearestWood);
+	    	  if(stripMoveWood.preconditionsMet(this)) {
+	    		  peasantActions.get(index).add(stripMoveWood);
+	    	  }
+	      }
 	      index++;
 	        
 	    }
