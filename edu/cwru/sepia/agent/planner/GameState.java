@@ -35,6 +35,8 @@ public class GameState implements Comparable<GameState> {
 	public int requiredGold, requiredWood;
 	// townhall position
 	public Position townhallPos;
+	// Cost to reach this state
+	public int cost;
 	// are we allowing building of more peasants?
 	public boolean allowBuildPeasants;
 	//-------------------DYNAMIC VALUES---------------------//
@@ -54,6 +56,18 @@ public class GameState implements Comparable<GameState> {
 		public boolean nextToResource;
 		public boolean nextToTownhall;
 		public Pair<ResourceType, Integer> holding;
+		
+		public Peasant(int id, Position pos, boolean nextToResource, boolean nextToTownhall, Pair<ResourceType, Integer> holding) {
+			this.id = id;
+			this.pos = pos;
+			this.nextToResource = nextToResource;
+			this.nextToTownhall = nextToTownhall;
+			this.holding = holding;
+		}
+		
+		public Peasant() {
+			//this(null, null, null, null, null);
+		}
 	}
 	// class representing a resource and how much can be mined
 	public class Resource {
@@ -61,6 +75,17 @@ public class GameState implements Comparable<GameState> {
 		public Position pos;
 		public ResourceType type;
 		public Integer quantity;
+		
+		public Resource(int id, Position pos, ResourceType type, Integer quantity) {
+			this.id = id;
+			this.pos = pos;
+			this.type = type;
+			this.quantity = quantity;
+		}
+		
+		public Resource() {
+			
+		}
 	}
 	
     /**
@@ -112,11 +137,10 @@ public class GameState implements Comparable<GameState> {
     }
     
     /**
-     * This is a constructor that will be the next game state with all the actions applied
+     * Need a constructor that will create an exact copy of the given state
      * @param prevState
-     * @param actions
      */
-    public GameState(GameState prevState, List<StripsAction> actions) {
+    public GameState(GameState prevState) {
     	// peel off variables
     	this.mapX = prevState.mapX;
     	this.mapY = prevState.mapY;
@@ -127,16 +151,15 @@ public class GameState implements Comparable<GameState> {
     	this.currentGold = prevState.currentGold;
     	this.currentWood = prevState.currentWood;
     	this.townhallFood = prevState.townhallFood;
-    	this.peasants = prevState.peasants;
-    	this.resources = prevState.resources;
-    	
-    	// save the actions that generated this change state
-    	this.prerequisiteActions = actions;
-    	// apply all actions
-    	for(StripsAction a : actions) {
-    		prevState = a.apply(prevState);
+    	for(Peasant p : prevState.peasants) {
+    		this.peasants.add(new Peasant(p.id, p.pos, p.nextToResource, p.nextToTownhall, p.holding));
     	}
+    	for(Resource r : prevState.resources) {
+    		this.resources.add(new Resource(r.id, r.pos, r.type, r.quantity));
+    	}
+    	this.resources = prevState.resources;
     }
+    
 
     /**
      * Unlike in the first A* assignment there are many possible goal states. As long as the wood and gold requirements
@@ -240,7 +263,12 @@ public class GameState implements Comparable<GameState> {
             	//System.out.print(onePeasantActions.get((i/j)%onePeasantActions.size()) + " ");
                 j *= onePeasantActions.size();
             }
-            GameState newState = new GameState(this, actionsForOneState);
+            //Create a clone of the current state
+            GameState newState = new GameState(this);
+            //Apply all of the new actions
+            for(StripsAction action : actionsForOneState) {
+            	newState = action.apply(newState);
+            }
             stateList.add(newState);
         }
 		return stateList;
@@ -321,9 +349,7 @@ public class GameState implements Comparable<GameState> {
      * @return The current cost to reach this goal
      */
     public double getCost() {
-        // TODO: Implement me!
-    	//Pretty much 1 unless it's a move, and if it is, then some rough approximation of how far you had to move
-        return 0.0;
+        return cost;
     }
 
     /**
@@ -363,6 +389,16 @@ public class GameState implements Comparable<GameState> {
     public int hashCode() {
         // TODO: Implement me!
         return 0;
+    }
+    
+    public Peasant getPeasant(int id) {
+    	for(Peasant p: peasants) {
+    		if(p.id == id) {
+    			return p;
+    		}
+    	}
+    	System.err.println("Error! This GameState instance does not have a peasant with the given id: " + id);
+    	return null;
     }
 }
 

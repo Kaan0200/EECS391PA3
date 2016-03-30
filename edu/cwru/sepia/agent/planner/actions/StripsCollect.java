@@ -24,6 +24,10 @@ public class StripsCollect implements StripsAction {
 
 	@Override
 	public GameState apply(GameState state) {
+		/* The peasant was assigned from 'this' instance, but the state that should be affected by this 
+		 * StripsAction is a copy of that state, and thus so is the peasant.
+		 */
+		collector = state.getPeasant(collector.id);
 		collector.holding = new Pair<>(collection.type, 100);
 		collection.quantity = collection.quantity-100;
 		return state;

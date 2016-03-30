@@ -21,6 +21,10 @@ public class StripsDeposit implements StripsAction{
 
 	@Override
 	public GameState apply(GameState state) {
+		/* The peasant was assigned from 'this' instance, but the state that should be affected by this 
+		 * StripsAction is a copy of that state, and thus so is the peasant.
+		 */
+		depositer = state.getPeasant(depositer.id);
 		if (depositer.holding.a == ResourceType.GOLD){
 			state.currentGold += depositer.holding.b;
 			depositer.holding = null;

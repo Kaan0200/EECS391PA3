@@ -39,6 +39,10 @@ public class StripsMove implements StripsAction {
 
 	@Override
 	public GameState apply(GameState state) {
+		/* The peasant was assigned from 'this' instance, but the state that should be affected by this 
+		 * StripsAction is a copy of that state, and thus so is the peasant.
+		 */
+		mover = state.getPeasant(mover.id);
 		// moving to townhall
 		if (location == null) {
 			mover.nextToTownhall = true;
