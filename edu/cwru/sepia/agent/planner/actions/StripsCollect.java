@@ -30,6 +30,7 @@ public class StripsCollect implements StripsAction {
 		collector = state.getPeasant(collector.id);
 		collector.holding = new Pair<>(collection.type, 100);
 		collection.quantity = collection.quantity-100;
+		state.cost++;
 		return state;
 	}
 	

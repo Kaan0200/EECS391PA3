@@ -47,11 +47,13 @@ public class StripsMove implements StripsAction {
 		if (location == null) {
 			mover.nextToTownhall = true;
 			mover.nextToResource = false;
+			state.cost += mover.pos.euclideanDistance(state.townhallPos);
 		} else {
 			mover.nextToResource = true;
 			mover.nextToTownhall = false;
+			state.cost += mover.pos.euclideanDistance(location.pos);
 		}
-
+		
 		return state;
 	}
 	

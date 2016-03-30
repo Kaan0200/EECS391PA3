@@ -23,7 +23,7 @@ public class StripsBuildPeasant implements StripsAction {
 		p.nextToResource = false;
 		
 		state.peasants.add(state.new Peasant());
-		
+		//Assume that this has no cost for now
 		return state;
 		
 	}

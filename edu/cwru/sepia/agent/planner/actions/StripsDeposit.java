@@ -35,6 +35,8 @@ public class StripsDeposit implements StripsAction{
 		} else {
 			System.err.println("Unhandled attempt to deposit unknown resource type");
 		}
+		
+		state.cost++;
 		return state;
 	}
 	
