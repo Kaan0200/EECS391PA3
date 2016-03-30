@@ -17,7 +17,7 @@ public class StripsCollect implements StripsAction {
 	@Override
 	public boolean preconditionsMet(GameState state) {
 		// must be next to a resource and not holding anything
-		return ((collector.nextToResource) &&
+		return ((collector.nextToGold || collector.nextToWood) &&
 				(collector.holding == null) &&
 				(collection.quantity > 0));
 	}

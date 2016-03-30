@@ -2,6 +2,7 @@ package edu.cwru.sepia.agent.planner.actions;
 
 import edu.cwru.sepia.agent.planner.GameState;
 import edu.cwru.sepia.agent.planner.GameState.*;
+import edu.cwru.sepia.agent.planner.ResourceType;
 
 public class StripsMove implements StripsAction {
 	
@@ -46,10 +47,16 @@ public class StripsMove implements StripsAction {
 		// moving to townhall
 		if (location == null) {
 			mover.nextToTownhall = true;
-			mover.nextToResource = false;
+			mover.nextToGold = false;
+			mover.nextToWood = false;
 			state.cost += mover.pos.euclideanDistance(state.townhallPos);
 		} else {
-			mover.nextToResource = true;
+			if(location.type == ResourceType.GOLD) {
+				mover.nextToGold = true;
+			}
+			else if (location.type == ResourceType.WOOD) {
+				mover.nextToWood = true;
+			}
 			mover.nextToTownhall = false;
 			state.cost += mover.pos.euclideanDistance(location.pos);
 		}

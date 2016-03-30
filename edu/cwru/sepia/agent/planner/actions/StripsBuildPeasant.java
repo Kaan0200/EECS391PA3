@@ -20,7 +20,8 @@ public class StripsBuildPeasant implements StripsAction {
 		
 		p.holding = null;
 		p.nextToTownhall = true;
-		p.nextToResource = false;
+		p.nextToGold = false;
+		p.nextToWood = false;
 		
 		state.peasants.add(state.new Peasant());
 		//Assume that this has no cost for now

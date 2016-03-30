@@ -53,14 +53,16 @@ public class GameState implements Comparable<GameState> {
 	public class Peasant {
 		public int id;
 		public Position pos;
-		public boolean nextToResource;
+		public boolean nextToGold;
+		public boolean nextToWood;
 		public boolean nextToTownhall;
 		public Pair<ResourceType, Integer> holding;
 		
-		public Peasant(int id, Position pos, boolean nextToResource, boolean nextToTownhall, Pair<ResourceType, Integer> holding) {
+		public Peasant(int id, Position pos, boolean nextToGold, boolean nextToWood, boolean nextToTownhall, Pair<ResourceType, Integer> holding) {
 			this.id = id;
 			this.pos = pos;
-			this.nextToResource = nextToResource;
+			this.nextToGold = nextToGold;
+			this.nextToWood = nextToWood;
 			this.nextToTownhall = nextToTownhall;
 			this.holding = holding;
 		}
@@ -76,7 +78,8 @@ public class GameState implements Comparable<GameState> {
 				Peasant other = (Peasant) o;
 				boolean same = this.id == other.id &&
 						this.pos.equals(other.pos) &&
-						this.nextToResource == other.nextToResource &&
+						this.nextToGold == other.nextToGold &&
+						this.nextToWood == other.nextToWood &&
 						this.nextToTownhall == other.nextToTownhall;
 				return same;
 			}
@@ -180,7 +183,7 @@ public class GameState implements Comparable<GameState> {
     	peasants = new ArrayList<>();
     	resources = new ArrayList<>();
     	for(Peasant p : prevState.peasants) {
-    		this.peasants.add(new Peasant(p.id, p.pos, p.nextToResource, p.nextToTownhall, p.holding));
+    		this.peasants.add(new Peasant(p.id, p.pos, p.nextToGold, p.nextToWood, p.nextToTownhall, p.holding));
     	}
     	for(Resource r : prevState.resources) {
     		this.resources.add(new Resource(r.id, r.pos, r.type, r.quantity));
@@ -238,7 +241,7 @@ public class GameState implements Comparable<GameState> {
 		      }
 	          //find nearest gold
 	      	  Resource nearestGold = findNearestGold(p.pos);
-		      if(p.pos.isAdjacent(nearestGold.pos)) {
+		      if(p.nextToGold) {
 	      		  //Create StripsCollect object
 		    	  StripsCollect stripCollectGold = new StripsCollect(p, nearestGold);
 		    	  if(stripCollectGold.preconditionsMet(this)) {
@@ -254,7 +257,7 @@ public class GameState implements Comparable<GameState> {
 		      }
 	          //find nearest forest
 	      	  Resource nearestWood = findNearestWood(p.pos);
-		      if(p.pos.isAdjacent(nearestWood.pos)) {
+		      if(p.nextToWood) {
 	      		  //Create StripsCollect object
 		    	  StripsCollect stripCollectWood = new StripsCollect(p, nearestWood);
 		    	  if(stripCollectWood.preconditionsMet(this)) {
