@@ -25,7 +25,7 @@ import java.util.Stack;
 public class PEAgent extends Agent {
 
     // The plan being executed
-    private List<StripsAction> plan = null;
+    private Stack<StripsAction> plan = null;
 
     // maps the real unit Ids to the plan's unit ids
     // when you're planning you won't know the true unit IDs that sepia assigns. So you'll use placeholders (1, 2, 3).
@@ -37,7 +37,7 @@ public class PEAgent extends Agent {
     public PEAgent(int playernum, Stack<StripsAction> plan) {
         super(playernum);
         peasantIdMap = new HashMap<Integer, Integer>();
-        this.plan = createOrderedList(plan);
+        this.plan = plan;
 
     }
 
@@ -83,15 +83,6 @@ public class PEAgent extends Agent {
      * Action.createCompoundMove(int peasantId, int x, int y)
      *
      * these actions are stored in a mapping between the peasant unit ID executing the action and the action you created.
-     *
-     * For the compound actions you will need to check their progress and wait until they are complete before issuing
-     * another action for that unit. If you issue an action before the compound action is complete then the peasant
-     * will stop what it was doing and begin executing the new action.
-     *
-     * To check an action's progress you can call getCurrentDurativeAction on each UnitView. If the Action is null nothing
-     * is being executed. If the action is not null then you should also call getCurrentDurativeProgress. If the value is less than
-     * 1 then the action is still in progress.
-     *
      * Also remember to check your plan's preconditions before executing!
      */
     @Override
@@ -114,11 +105,16 @@ public class PEAgent extends Agent {
 				}
 			}
 		}
-    	
+    	if (plan.isEmpty()){
+    		System.out.println("===========VICTORY============\n===Plan finished executing!===");
+    		System.exit(0);
+    		
+    	}
     	// do next action if we are done with everything
     	if (stillExecuting == false){
-    		//----------TODO
-    		sepiaActions.put(1, createSepiaAction(plan.get(0)));
+    		Action next = createSepiaAction(plan.pop(), stateView);
+    		System.out.println(next.toString());
+    		sepiaActions.put(1, next);
     	}
     	
         return sepiaActions;
@@ -129,21 +125,32 @@ public class PEAgent extends Agent {
      * @param action StripsAction
      * @return SEPIA representation of same action
      */
-    private Action createSepiaAction(StripsAction action) {
+    private Action createSepiaAction(StripsAction action, State.StateView state) {
     	Action returnAction = null;
     	
         if(action instanceof StripsMove){
         	StripsMove move = (StripsMove) action;
-        	returnAction = 
-        			Action.createCompoundMove(peasantIdMap.get(move.mover.id),
-        									  move.location.pos.x,
-        									  move.location.pos.y);
+        	// moving back to townhall
+        	if (move.location == null) {
+        		returnAction =
+        				Action.createCompoundMove(peasantIdMap.get(move.mover.id),
+        						state.getUnit(townhallId).getXPosition(),
+        						state.getUnit(townhallId).getYPosition());
+        						
+        	} else {
+        		returnAction = 
+        				Action.createCompoundMove(peasantIdMap.get(move.mover.id),
+        									  	move.location.pos.x,
+        									  	move.location.pos.y);
+        	}
         	
         } else if (action instanceof StripsCollect){
         	StripsCollect collect = (StripsCollect) action;
         	returnAction = 
         			Action.createPrimitiveGather(peasantIdMap.get(collect.collector.id),
-        					collect.collector.pos.getDirection(collect.collection.pos));
+        					new Position(state.getUnit(peasantIdMap.get(collect.collector.id)).getXPosition(),
+        							     state.getUnit(peasantIdMap.get(collect.collector.id)).getYPosition()).getDirection(
+        							    		 collect.collection.pos));
         	// needs to figure out direction
         	
         } else if (action instanceof StripsDeposit){
@@ -161,17 +168,6 @@ public class PEAgent extends Agent {
         }
         return returnAction;
 
-    }
-    
-    private List<StripsAction> createOrderedList(Stack<StripsAction> actions){
-    	
-    	StripsAction[] planArray = actions.toArray(new StripsAction[actions.size()]);
-    	List<StripsAction> orderedActions = new ArrayList<StripsAction>();
-    	
-    	for (int i = planArray.length; i > 0; i--){
-    		orderedActions.add(planArray[i-1]);
-    	}
-    	return orderedActions;
     }
 
     @Override
