@@ -148,6 +148,7 @@ public class PlannerAgent extends Agent {
         	//Is m the goal? If so, return a path that ends in this cell, as the cell NEXT to the goal is the real final destination for the stack
         	if(m.getKey().isGoal()) {
             	Stack<GameState> path = new Stack<>();
+            	path.push(m.getKey());
             	path.push(initialState);
             	return path;
             }
