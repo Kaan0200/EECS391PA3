@@ -401,16 +401,24 @@ public class GameState implements Comparable<GameState> {
     		//Actually, subtract ALMOST a full roundtrip.  Depositing will actually reduce by a full roundtrip.
     		if(p.holding != null && p.nextToTownhall) {
     			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
-    			if(p.holding.a == ResourceType.GOLD) {
+    			if(p.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
     				goldCost -= 1.5 * townhallPos.euclideanDistance(findNearestGold(townhallPos).pos);
     			}
-    			else if(p.holding.a == ResourceType.WOOD) {
+    			else if(p.holding.a == ResourceType.WOOD && (requiredWood - currentWood > 0)) {
     				woodCost -= 1.5 * townhallPos.euclideanDistance(findNearestWood(townhallPos).pos);
     			}
     		}
     		//Assume that the peasant will move toward whichever resource wood/gold is nearer, and use that distance to get a higher nearest resource value
-    		double pNearestResource = Math.max(townhallPos.euclideanDistance(findNearestWood(townhallPos).pos) - p.pos.euclideanDistance(findNearestWood(townhallPos).pos),
-    				townhallPos.euclideanDistance(findNearestGold(townhallPos).pos) - p.pos.euclideanDistance(findNearestGold(townhallPos).pos));
+    		double pNearestResource = 0;
+    		if(requiredWood - currentWood > 0 && requiredGold - currentGold > 0) {
+    			pNearestResource = Math.max(townhallPos.euclideanDistance(findNearestWood(townhallPos).pos) * (p.nextToWood ? 1 : 0),
+    					townhallPos.euclideanDistance(findNearestGold(townhallPos).pos) * (p.nextToGold ? 1 : 0));
+    		} else if (requiredGold - currentGold > 0) {
+    			pNearestResource = townhallPos.euclideanDistance(findNearestGold(townhallPos).pos) * (p.nextToGold ? 1 : 0);
+    		} else if (requiredWood - currentWood > 0) {
+    			pNearestResource = townhallPos.euclideanDistance(findNearestWood(townhallPos).pos) * (p.nextToWood ? 1 : 0);
+    		}
+    				
     		nearToResource += pNearestResource;
     	}
         return Math.round((goldCost + woodCost - nearToResource) * 1000)/1000.0;
