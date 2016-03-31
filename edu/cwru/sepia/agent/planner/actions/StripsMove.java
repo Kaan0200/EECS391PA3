@@ -46,10 +46,19 @@ public class StripsMove implements StripsAction {
 		mover = state.getPeasant(mover.id);
 		// moving to townhall
 		if (location == null) {
-			mover.nextToTownhall = true;
+			//We're assuming that the peasant is ALWAYS positioned at either the townhall or the nearest resource of gold/wood, so the cost
+			//to reach the nearest gold/wood is assumed to be the distance between the townhall and that resource.
+			double distTownToNearestGold = state.townhallPos.euclideanDistance(state.findNearestGold(state.townhallPos).pos);
+    		double distTownToNearestWood = state.townhallPos.euclideanDistance(state.findNearestWood(state.townhallPos).pos);
+			if(mover.nextToGold) {
+				state.cost += distTownToNearestGold;
+			}
+			else if(mover.nextToWood) {
+				state.cost += distTownToNearestWood;
+			}
+    		mover.nextToTownhall = true;
 			mover.nextToGold = false;
 			mover.nextToWood = false;
-			state.cost += mover.pos.euclideanDistance(state.townhallPos);
 		} else {
 			if(location.type == ResourceType.GOLD) {
 				mover.nextToGold = true;

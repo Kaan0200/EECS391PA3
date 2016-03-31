@@ -153,7 +153,7 @@ public class PlannerAgent extends Agent {
     	ArrayList<Map.Entry<GameState, Double>> sortedOptions = sortHashMap(heuristicCosts);
     	System.out.println("--Sorted Options--");
     	for(Map.Entry<GameState, Double> entry : sortedOptions) {
-    		System.out.println(entry.getKey().prerequisiteActions.get(0).toString() + " Heuristic val: " + entry.getValue());
+    		System.out.println(entry.getKey().prerequisiteActions.get(0).toString() + " H+C val: " + entry.getValue());
     	}
     	System.out.println("------------------");
     	

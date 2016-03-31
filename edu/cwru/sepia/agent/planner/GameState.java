@@ -327,7 +327,7 @@ public class GameState implements Comparable<GameState> {
      * @param p
      * @return
      */
-	private Resource findNearestWood(Position p) {
+	public Resource findNearestWood(Position p) {
 		ArrayList<Pair<Resource,Double>> resourceDistances = new ArrayList<>();
 		for(Resource r : resources) {
 			if(r.type == ResourceType.WOOD && r.quantity > 0) {
@@ -354,7 +354,7 @@ public class GameState implements Comparable<GameState> {
 	 * @param p
 	 * @return
 	 */
-	private Resource findNearestGold(Position p) {
+	public Resource findNearestGold(Position p) {
 		ArrayList<Pair<Resource,Double>> resourceDistances = new ArrayList<>();
 		for(Resource r : resources) {
 			if(r.type == ResourceType.GOLD && r.quantity > 0) {
@@ -385,13 +385,15 @@ public class GameState implements Comparable<GameState> {
      * @return The value estimated remaining cost to reach a goal state from this state.
      */
     public double heuristic() {
+    	double distTownToNearestGold = townhallPos.euclideanDistance(findNearestGold(townhallPos).pos);
+		double distTownToNearestWood = townhallPos.euclideanDistance(findNearestWood(townhallPos).pos);
     	//Estimate the number of trips it will take to transport the required amount of resource from the nearest
     	//source to the townhall.  Multiply by 2 to account for round trips.
     	double goldTrips = (Math.max((requiredGold-currentGold),0)/(100 * peasants.size())) * 2;
-    	double goldCost = goldTrips * townhallPos.euclideanDistance(findNearestGold(townhallPos).pos);
+    	double goldCost = goldTrips * distTownToNearestGold;
     	
     	double woodTrips = (Math.max((requiredWood-currentWood),0)/(100 * peasants.size())) * 2;
-    	double woodCost = woodTrips * townhallPos.euclideanDistance(findNearestWood(townhallPos).pos);
+    	double woodCost = woodTrips * distTownToNearestWood;
     	
     	//If any peasant is nearer to a resource than the distance between the townhall and that resource, let it count in the agent's favor
     	double nearToResource = 0;
@@ -402,26 +404,29 @@ public class GameState implements Comparable<GameState> {
     		if(p.holding != null && p.nextToTownhall) {
     			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
     			if(p.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
-    				goldCost -= 1.5 * townhallPos.euclideanDistance(findNearestGold(townhallPos).pos);
+    				goldCost -= 1.5 * distTownToNearestGold;
     			}
     			else if(p.holding.a == ResourceType.WOOD && (requiredWood - currentWood > 0)) {
-    				woodCost -= 1.5 * townhallPos.euclideanDistance(findNearestWood(townhallPos).pos);
+    				woodCost -= 1.5 * distTownToNearestWood;
     			}
     		}
     		//Assume that the peasant will move toward whichever resource wood/gold is nearer, and use that distance to get a higher nearest resource value
     		double pNearestResource = 0;
     		if(requiredWood - currentWood > 0 && requiredGold - currentGold > 0) {
-    			pNearestResource = Math.max(townhallPos.euclideanDistance(findNearestWood(townhallPos).pos) * (p.nextToWood ? 1 : 0),
-    					townhallPos.euclideanDistance(findNearestGold(townhallPos).pos) * (p.nextToGold ? 1 : 0));
+    			pNearestResource = Math.max(distTownToNearestWood * (p.nextToWood ? 1 : 0),
+    					distTownToNearestGold * (p.nextToGold ? 1 : 0));
     		} else if (requiredGold - currentGold > 0) {
-    			pNearestResource = townhallPos.euclideanDistance(findNearestGold(townhallPos).pos) * (p.nextToGold ? 1 : 0);
+    			pNearestResource = distTownToNearestGold * (p.nextToGold ? 1 : 0);
     		} else if (requiredWood - currentWood > 0) {
-    			pNearestResource = townhallPos.euclideanDistance(findNearestWood(townhallPos).pos) * (p.nextToWood ? 1 : 0);
+    			pNearestResource = distTownToNearestWood * (p.nextToWood ? 1 : 0);
     		}
     				
     		nearToResource += pNearestResource;
     	}
-        return Math.round((goldCost + woodCost - nearToResource) * 1000)/1000.0;
+    	/* I don't know why 1/1.6 is the magic ratio for this, but that seems to be a ratio
+    	 * which appropriately balances the heuristic value and the cost
+    	 */
+        return Math.round((goldCost + woodCost - nearToResource) * 1000)/1600.0;
     }
 
     /**
