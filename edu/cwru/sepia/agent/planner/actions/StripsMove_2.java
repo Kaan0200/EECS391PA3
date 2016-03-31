@@ -35,7 +35,7 @@ public class StripsMove_2 implements StripsAction {
 	public boolean preconditionsMet(GameState state) {
 		if(location == null){
 			// return false if we are already next to the townhall
-			return !mover.nextToTownhall;
+			return !mover.nextToTownhall && !mover2.nextToTownhall;
 		} else {
 			return true;
 		}
