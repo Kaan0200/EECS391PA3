@@ -540,6 +540,16 @@ public class GameState implements Comparable<GameState> {
     	System.err.println("Error! This GameState instance does not have a peasant with the given id: " + id);
     	return null;
     }
+    
+    public Resource getResource(int id) {
+    	for(Resource r: resources) {
+    		if(r.id == id) {
+    			return r;
+    		}
+    	}
+    	System.err.println("Error! This GameState instance does not have a resource with the given id: " + id);
+    	return null;
+    }
 }
 
 

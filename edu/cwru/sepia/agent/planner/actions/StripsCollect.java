@@ -35,6 +35,7 @@ public class StripsCollect implements StripsAction {
 		 * StripsAction is a copy of that state, and thus so is the peasant.
 		 */
 		collector = state.getPeasant(collector.id);
+		collection = state.getResource(collection.id);
 		collector.holding = new Pair<>(collection.type, 100);
 		collection.quantity = collection.quantity-100;
 		state.cost++;

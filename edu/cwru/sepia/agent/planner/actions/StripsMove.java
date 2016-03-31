@@ -53,9 +53,11 @@ public class StripsMove implements StripsAction {
 		} else {
 			if(location.type == ResourceType.GOLD) {
 				mover.nextToGold = true;
+				mover.nextToWood = false;
 			}
 			else if (location.type == ResourceType.WOOD) {
 				mover.nextToWood = true;
+				mover.nextToGold = false;
 			}
 			mover.nextToTownhall = false;
 			state.cost += mover.pos.euclideanDistance(location.pos);

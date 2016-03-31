@@ -103,6 +103,7 @@ public class PlannerAgent extends Agent {
     		}
     	}
     	System.out.println("-----------------------");
+    	System.out.println("Total steps: " + astarPath.size());
     	
     	Stack<StripsAction> actionPath = getStripsFromStates(astarPath);
         
