@@ -97,6 +97,7 @@ public class PlannerAgent extends Agent {
     	Stack<GameState> astarPath = AstarInternal(startState, closedList);
     	
     	System.out.println("------STRIPS Plan------");
+    	System.out.println("----(Bottom to Top)----");
     	for(GameState g: astarPath) {
     		for(StripsAction a : g.prerequisiteActions) {
     			System.out.println(a.toString());

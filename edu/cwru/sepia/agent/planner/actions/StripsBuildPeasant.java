@@ -18,12 +18,17 @@ public class StripsBuildPeasant implements StripsAction {
 	public GameState apply(GameState state) {
 		GameState.Peasant p = state.new Peasant();
 		
+		p.id = state.peasants.size() + 1;
+		p.pos = state.townhallPos;
 		p.holding = null;
 		p.nextToTownhall = true;
 		p.nextToGold = false;
 		p.nextToWood = false;
 		
-		state.peasants.add(state.new Peasant());
+		state.peasants.add(p);
+		
+		state.currentGold -= 400;
+		state.townhallFood -= 1;
 		//Assume that this has no cost for now
 		state.prerequisiteActions.add(this);
 		return state;

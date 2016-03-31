@@ -283,7 +283,9 @@ public class GameState implements Comparable<GameState> {
     			// TODO: create new peasant
     			StripsBuildPeasant stripBuild = new StripsBuildPeasant();
     			if(stripBuild.preconditionsMet(this)) {
-	        		peasantActions.get(index).add(stripBuild);
+	        		ArrayList<StripsAction> buildP = new ArrayList<StripsAction>();
+	        		buildP.add(stripBuild);
+    				peasantActions.add(buildP);
     			}
     		}
     	}
