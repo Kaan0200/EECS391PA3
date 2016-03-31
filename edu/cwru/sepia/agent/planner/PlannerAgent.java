@@ -104,11 +104,27 @@ public class PlannerAgent extends Agent {
     	}
     	System.out.println("-----------------------");
     	
-        // TODO: Implement me!
-        return null;
+    	Stack<StripsAction> actionPath = getStripsFromStates(astarPath);
+        
+        return actionPath;
     }
     
     /**
+     * Convert the stack of GameStates into a stack of StripsActions
+     * @param astarPath
+     * @return
+     */
+    private Stack<StripsAction> getStripsFromStates(Stack<GameState> astarPath) {
+    	Stack<StripsAction> actionPath = new Stack<>();
+    	for(GameState g : astarPath) {
+    		for(StripsAction action : g.prerequisiteActions) {
+    			actionPath.push(action);
+    		}
+    	}
+		return actionPath;
+	}
+
+	/**
      * The internal, recursive method for Astar Search
      * @param initialState - Want to find the 'path' of states from here to the goal
      * @param closedList - A set of GameStates that have already been considered, so they shouldn't be considered for the future
