@@ -156,7 +156,11 @@ public class PEAgent extends Agent {
         } else if (action instanceof StripsDeposit){
         	StripsDeposit deposit = (StripsDeposit) action;
         	returnAction = 
-        			Action.createCompoundDeposit(peasantIdMap.get(deposit.getDepositer().id), peasantTemplateId);
+        			Action.createPrimitiveDeposit(peasantIdMap.get(deposit.getDepositer().id),
+        					new Position(state.getUnit(peasantIdMap.get(deposit.getDepositer().id)).getXPosition(),
+   							             state.getUnit(peasantIdMap.get(deposit.getDepositer().id)).getYPosition()).getDirection(
+   							            		 		new Position(state.getUnit(townhallId).getXPosition(),
+   							            				state.getUnit(townhallId).getYPosition())));
         	
         } else if (action instanceof StripsBuildPeasant){
         	StripsBuildPeasant build = (StripsBuildPeasant) action;
