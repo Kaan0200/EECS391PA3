@@ -4,15 +4,17 @@ import edu.cwru.sepia.agent.planner.GameState;
 import edu.cwru.sepia.agent.planner.GameState.*;
 import edu.cwru.sepia.agent.planner.ResourceType;
 
-public class StripsDeposit implements StripsAction{
+public class StripsDeposit_2 implements StripsAction{
 
 	private Peasant depositer;
+	private Peasant depositer2;
 	//Save the resourceType in this variable since depositer's holding will become null when this action is applied
 	ResourceType resourceType;
 	
-	public StripsDeposit(Peasant depositer){
+	public StripsDeposit_2(Peasant depositer, Peasant depositer2){
 		this.depositer = depositer;
-		if(depositer.holding != null) {
+		this.depositer2 = depositer;
+		if(depositer.holding != null && depositer2.holding != null) {
 			resourceType = depositer.holding.a;
 		}
 	}
@@ -20,8 +22,7 @@ public class StripsDeposit implements StripsAction{
 	@Override
 	public boolean preconditionsMet(GameState state) {
 		// must be holding something and next to townhall
-		return ((depositer.holding != null) &&
-				depositer.nextToTownhall);
+		return ((depositer.holding != null) && depositer.nextToTownhall && (depositer2.holding != null) && depositer2.nextToTownhall);
 	}
 
 	@Override
@@ -30,13 +31,16 @@ public class StripsDeposit implements StripsAction{
 		 * StripsAction is a copy of that state, and thus so is the peasant.
 		 */
 		depositer = state.getPeasant(depositer.id);
-		if (depositer.holding.a == ResourceType.GOLD){
-			state.currentGold += depositer.holding.b;
+		depositer2 = state.getPeasant(depositer2.id);
+		if (depositer.holding.a == ResourceType.GOLD && depositer2.holding.a == ResourceType.GOLD){
+			state.currentGold += depositer.holding.b + depositer2.holding.b;
 			depositer.holding = null;
+			depositer2.holding = null;
 		}
-		else if (depositer.holding.a == ResourceType.WOOD){
-			state.currentWood += depositer.holding.b;
+		else if (depositer.holding.a == ResourceType.WOOD && depositer2.holding.a == ResourceType.WOOD){
+			state.currentWood += depositer.holding.b + depositer2.holding.b;
 			depositer.holding = null;
+			depositer2.holding = null;
 		} else {
 			System.err.println("Unhandled attempt to deposit unknown resource type");
 		}
@@ -49,7 +53,7 @@ public class StripsDeposit implements StripsAction{
 	
 	@Override
 	public String toString() {
-		return "DEPOSIT P" + depositer.id + " " + resourceType + " TO TOWNHALL";
+		return "DEPOSIT_2 P" + depositer.id + "&" + depositer2.id + " " + resourceType + " TO TOWNHALL";
 	}
 	
 	@Override
@@ -64,6 +68,10 @@ public class StripsDeposit implements StripsAction{
 	}
 	
 	public Peasant getDepositer() {
+		return depositer;
+	}
+	
+	public Peasant getDepositer2() {
 		return depositer;
 	}
 }

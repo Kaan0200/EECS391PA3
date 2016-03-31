@@ -5,25 +5,27 @@ import edu.cwru.sepia.agent.planner.GameState;
 import edu.cwru.sepia.agent.planner.ResourceType;
 import edu.cwru.sepia.util.Pair;
 
-public class StripsCollect implements StripsAction {
+public class StripsCollect_2 implements StripsAction {
 	
 	private Peasant collector;
+	private Peasant collector2;
 	private Resource collection;
 
 	
-	public StripsCollect(Peasant collector, Resource collection){
+	public StripsCollect_2(Peasant collector, Peasant collector2, Resource collection){
 		this.collection = collection;
 		this.collector = collector;
+		this.collector2 = collector2;
 	}
 	
 	@Override
 	public boolean preconditionsMet(GameState state) {
 		// must be next to the correct and not holding anything
 		if(collection.type == ResourceType.GOLD) {
-			return collector.nextToGold && collector.holding == null && collection.quantity > 0;
+			return collector.nextToGold && collector.holding == null && collector2.nextToGold && collector2.holding == null && collection.quantity > 0;
 		}
 		else if (collection.type == ResourceType.WOOD) {
-			return collector.nextToWood && collector.holding == null && collection.quantity > 0; 
+			return collector.nextToWood && collector.holding == null && collector2.nextToWood && collector2.holding == null && collection.quantity > 0; 
 		}
 		else {
 			return false;
@@ -36,8 +38,10 @@ public class StripsCollect implements StripsAction {
 		 * StripsAction is a copy of that state, and thus so is the peasant.
 		 */
 		collector = state.getPeasant(collector.id);
+		collector2 = state.getPeasant(collector2.id);
 		collection = state.getResource(collection.id);
 		collector.holding = new Pair<>(collection.type, 100);
+		collector2.holding = new Pair<>(collection.type, 100);
 		collection.quantity = collection.quantity-100;
 		state.cost++;
 		state.prerequisiteActions.add(this);
@@ -46,7 +50,7 @@ public class StripsCollect implements StripsAction {
 	
 	@Override
 	public String toString() {
-		return "COLLECT P" + collector.id + " " + collection.type + " " + collector.holding.b;
+		return "COLLECT_2 P" + collector.id + "&" + collector2.id + " " + collection.type + " " + (collector.holding.b + collector2.holding.b);
 	}
 	
 	@Override
@@ -62,6 +66,10 @@ public class StripsCollect implements StripsAction {
 	
 	public Peasant getCollector() {
 		return collector;
+	}
+	
+	public Peasant getCollector2() {
+		return collector2;
 	}
 	
 	public Resource getCollection() {

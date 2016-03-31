@@ -1,6 +1,7 @@
 package edu.cwru.sepia.agent.planner;
 
 import edu.cwru.sepia.action.Action;
+import edu.cwru.sepia.action.ActionResult;
 import edu.cwru.sepia.agent.Agent;
 import edu.cwru.sepia.agent.planner.actions.*;
 import edu.cwru.sepia.environment.model.history.History;
@@ -8,10 +9,13 @@ import edu.cwru.sepia.environment.model.state.ResourceType;
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Template;
 import edu.cwru.sepia.environment.model.state.Unit;
+import edu.cwru.sepia.environment.model.state.Unit.UnitView;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -79,21 +83,41 @@ public class PEAgent extends Agent {
      * Action.createCompoundMove(int peasantId, int x, int y)
      *
      * these actions are stored in a mapping between the peasant unit ID executing the action and the action you created.
-     *
-     * For the compound actions you will need to check their progress and wait until they are complete before issuing
-     * another action for that unit. If you issue an action before the compound action is complete then the peasant
-     * will stop what it was doing and begin executing the new action.
-     *
-     * To check an action's progress you can call getCurrentDurativeAction on each UnitView. If the Action is null nothing
-     * is being executed. If the action is not null then you should also call getCurrentDurativeProgress. If the value is less than
-     * 1 then the action is still in progress.
-     *
      * Also remember to check your plan's preconditions before executing!
      */
     @Override
     public Map<Integer, Action> middleStep(State.StateView stateView, History.HistoryView historyView) {
-        // TODO: Implement me!
-        return null;
+    	
+    	Map<Integer, Action> sepiaActions = new HashMap<Integer, Action>();
+    	boolean stillExecuting = false;
+    	
+    	// loop through all peasants to find if any are still executing
+    	for(UnitView u : stateView.getAllUnits()){
+			// verify they are peasants
+			if (u.getTemplateView().getName().equals("Peasant")) {
+				// check if it is executing still
+				Map<Integer, ActionResult> results = historyView
+						.getCommandFeedback(0, stateView.getTurnNumber() - 1);
+				for (ActionResult result : results.values()) {
+					if (result.getFeedback().toString().equals("INCOMPLETE")) {
+						stillExecuting = true;
+					}
+				}
+			}
+		}
+    	if (plan.isEmpty()){
+    		System.out.println("===========VICTORY============\n===Plan finished executing!===");
+    		System.exit(0);
+    		
+    	}
+    	// do next action if we are done with everything
+    	if (stillExecuting == false){
+    		Action next = createSepiaAction(plan.pop(), stateView);
+    		System.out.println(next.toString());
+    		sepiaActions.put(1, next);
+    	}
+    	
+        return sepiaActions;
     }
 
     /**
@@ -101,20 +125,48 @@ public class PEAgent extends Agent {
      * @param action StripsAction
      * @return SEPIA representation of same action
      */
-    private Action createSepiaAction(StripsAction action) {
+    private Action createSepiaAction(StripsAction action, State.StateView state) {
+    	Action returnAction = null;
+    	
         if(action instanceof StripsMove){
-        	//return Action.createCompoundMove((StripsMove) 
-        	return null;
+        	StripsMove move = (StripsMove) action;
+        	// moving back to townhall
+        	if (move.location == null) {
+        		returnAction =
+        				Action.createCompoundMove(peasantIdMap.get(move.mover.id),
+        						state.getUnit(townhallId).getXPosition(),
+        						state.getUnit(townhallId).getYPosition());
+        						
+        	} else {
+        		returnAction = 
+        				Action.createCompoundMove(peasantIdMap.get(move.mover.id),
+        									  	move.location.pos.x,
+        									  	move.location.pos.y);
+        	}
+        	
         } else if (action instanceof StripsCollect){
-        	return null;
+        	StripsCollect collect = (StripsCollect) action;
+        	returnAction = 
+        			Action.createPrimitiveGather(peasantIdMap.get(collect.getCollector().id),
+        					new Position(state.getUnit(peasantIdMap.get(collect.getCollector().id)).getXPosition(),
+        							     state.getUnit(peasantIdMap.get(collect.getCollector().id)).getYPosition()).getDirection(
+        							    		 collect.getCollection().pos));
+        	// needs to figure out direction
+        	
         } else if (action instanceof StripsDeposit){
-        	return null;
+        	StripsDeposit deposit = (StripsDeposit) action;
+        	returnAction = 
+        			Action.createCompoundDeposit(peasantIdMap.get(deposit.getDepositer().id), peasantTemplateId);
+        	
         } else if (action instanceof StripsBuildPeasant){
-        	return null;
+        	StripsBuildPeasant build = (StripsBuildPeasant) action;
+        	returnAction = 
+        			Action.createPrimitiveProduction(townhallId, peasantTemplateId);
+        	
         } else {
         	System.err.println("Unhandled attempt to convert STRIPS action to SEPIA action");
-        	return null;
         }
+        return returnAction;
 
     }
 
