@@ -7,8 +7,8 @@ import edu.cwru.sepia.util.Pair;
 
 public class StripsCollect implements StripsAction {
 	
-	Peasant collector;
-	Resource collection;
+	private Peasant collector;
+	private Resource collection;
 	
 	public StripsCollect(Peasant collector, Resource collection){
 		this.collection = collection;
@@ -57,5 +57,13 @@ public class StripsCollect implements StripsAction {
 			StripsAction s = (StripsAction) o;
 			return this.toString().equals(s.toString());
 		}
+	}
+	
+	public Peasant getCollector() {
+		return collector;
+	}
+	
+	public Resource getCollection() {
+		return collection;
 	}
 }

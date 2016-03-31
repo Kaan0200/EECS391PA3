@@ -280,7 +280,6 @@ public class GameState implements Comparable<GameState> {
 	    if (allowBuildPeasants) {
     		// check for the available resources
     		if ((townhallFood > 0) && (currentGold >= 400)){
-    			// TODO: create new peasant
     			StripsBuildPeasant stripBuild = new StripsBuildPeasant();
     			if(stripBuild.preconditionsMet(this)) {
 	        		ArrayList<StripsAction> buildP = new ArrayList<StripsAction>();
@@ -321,6 +320,8 @@ public class GameState implements Comparable<GameState> {
             }
             stateList.add(newState);
         }
+        
+       
 		return stateList;
 	}
 
