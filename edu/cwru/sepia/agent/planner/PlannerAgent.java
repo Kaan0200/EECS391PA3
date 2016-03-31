@@ -134,6 +134,11 @@ public class PlannerAgent extends Agent {
     	
     	//Sort children by cost + heuristic
     	ArrayList<Map.Entry<GameState, Double>> sortedOptions = sortHashMap(heuristicCosts);
+    	System.out.println("--Sorted Options--");
+    	for(Map.Entry<GameState, Double> entry : sortedOptions) {
+    		System.out.println(entry.getKey().prerequisiteActions.get(0).toString() + " Heuristic val: " + entry.getValue());
+    	}
+    	System.out.println("------------------");
     	
     	//Recurse
     	closedList.add(initialState);

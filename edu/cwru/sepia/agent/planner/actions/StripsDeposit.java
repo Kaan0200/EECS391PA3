@@ -7,9 +7,14 @@ import edu.cwru.sepia.agent.planner.ResourceType;
 public class StripsDeposit implements StripsAction{
 
 	Peasant depositer;
+	//Save the resourceType in this variable since depositer's holding will become null when this action is applied
+	ResourceType resourceType;
 	
 	public StripsDeposit(Peasant depositer){
 		this.depositer = depositer;
+		if(depositer.holding != null) {
+			resourceType = depositer.holding.a;
+		}
 	}
 	
 	@Override
@@ -38,11 +43,23 @@ public class StripsDeposit implements StripsAction{
 		
 		state.cost++;
 		state.prerequisiteActions.add(this);
+		System.out.println("CurrentWood: " + state.currentWood + " CurrentGold: " + state.currentGold);
 		return state;
 	}
 	
 	@Override
 	public String toString() {
-		return "DEPOSIT P" + depositer.id + " " + depositer.holding.a + " TO TOWNHALL";
+		return "DEPOSIT P" + depositer.id + " " + resourceType + " TO TOWNHALL";
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof StripsAction)) {
+			return false;
+		}
+		else {
+			StripsAction s = (StripsAction) o;
+			return this.toString().equals(s.toString());
+		}
 	}
 }

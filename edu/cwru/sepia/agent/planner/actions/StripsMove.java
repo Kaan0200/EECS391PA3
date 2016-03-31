@@ -34,7 +34,7 @@ public class StripsMove implements StripsAction {
 			// return false if we are already next to the townhall
 			return !mover.nextToTownhall;
 		} else {
-			return mover.nextToTownhall;
+			return true;
 		}
 	}
 
@@ -73,6 +73,17 @@ public class StripsMove implements StripsAction {
 		else {
 			return "MOVE P" + mover.id + " TO " + location.type + location.id + 
 					" X: " + location.pos.x + " Y: " + location.pos.y;
+		}
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof StripsAction)) {
+			return false;
+		}
+		else {
+			StripsAction s = (StripsAction) o;
+			return this.toString().equals(s.toString());
 		}
 	}
 }

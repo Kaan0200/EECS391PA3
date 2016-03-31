@@ -44,4 +44,7 @@ public interface StripsAction {
      */
     @Override
     public String toString();
+    
+    @Override
+    public boolean equals(Object o);
 }

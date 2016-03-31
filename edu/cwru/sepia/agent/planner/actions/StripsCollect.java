@@ -2,6 +2,7 @@ package edu.cwru.sepia.agent.planner.actions;
 
 import edu.cwru.sepia.agent.planner.GameState.*;
 import edu.cwru.sepia.agent.planner.GameState;
+import edu.cwru.sepia.agent.planner.ResourceType;
 import edu.cwru.sepia.util.Pair;
 
 public class StripsCollect implements StripsAction {
@@ -16,10 +17,16 @@ public class StripsCollect implements StripsAction {
 	
 	@Override
 	public boolean preconditionsMet(GameState state) {
-		// must be next to a resource and not holding anything
-		return ((collector.nextToGold || collector.nextToWood) &&
-				(collector.holding == null) &&
-				(collection.quantity > 0));
+		// must be next to the correct and not holding anything
+		if(collection.type == ResourceType.GOLD) {
+			return collector.nextToGold && collector.holding == null && collection.quantity > 0;
+		}
+		else if (collection.type == ResourceType.WOOD) {
+			return collector.nextToWood && collector.holding == null && collection.quantity > 0; 
+		}
+		else {
+			return false;
+		}
 	}
 
 	@Override
@@ -38,5 +45,16 @@ public class StripsCollect implements StripsAction {
 	@Override
 	public String toString() {
 		return "COLLECT P" + collector.id + " " + collection.type + " " + collector.holding.b;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof StripsAction)) {
+			return false;
+		}
+		else {
+			StripsAction s = (StripsAction) o;
+			return this.toString().equals(s.toString());
+		}
 	}
 }

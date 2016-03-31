@@ -34,5 +34,16 @@ public class StripsBuildPeasant implements StripsAction {
 	public String toString() {
 		return "BUILD NEW PEASANT"; 
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof StripsAction)) {
+			return false;
+		}
+		else {
+			StripsAction s = (StripsAction) o;
+			return this.toString().equals(s.toString());
+		}
+	}
 
 }

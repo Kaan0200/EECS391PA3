@@ -304,7 +304,8 @@ public class GameState implements Comparable<GameState> {
     	int solutions = 1;
         for(int i = 0; i < peasantActions.size(); solutions *= peasantActions.get(i).size(), i++);
         for(int i = 0; i < solutions; i++) {
-            int j = 1;
+            actionsForOneState.clear();
+        	int j = 1;
             for(ArrayList<StripsAction> onePeasantActions : peasantActions) {
                 actionsForOneState.add(onePeasantActions.get((i/j)%onePeasantActions.size()));
             	//System.out.print(onePeasantActions.get((i/j)%onePeasantActions.size()) + " ");
@@ -386,10 +387,10 @@ public class GameState implements Comparable<GameState> {
     public double heuristic() {
     	//Estimate the number of trips it will take to transport the required amount of resource from the nearest
     	//source to the townhall.  Multiply by 2 to account for round trips.
-    	double goldTrips = ((requiredGold-currentGold)/(100 * peasants.size())) * 2;
+    	double goldTrips = (Math.max((requiredGold-currentGold),0)/(100 * peasants.size())) * 2;
     	double goldCost = goldTrips * townhallPos.euclideanDistance(findNearestGold(townhallPos).pos);
     	
-    	double woodTrips = ((requiredWood-currentWood)/(100 * peasants.size())) * 2;
+    	double woodTrips = (Math.max((requiredWood-currentWood),0)/(100 * peasants.size())) * 2;
     	double woodCost = woodTrips * townhallPos.euclideanDistance(findNearestWood(townhallPos).pos);
     	
     	//If any peasant is nearer to a resource than the distance between the townhall and that resource, let it count in the agent's favor
@@ -412,7 +413,7 @@ public class GameState implements Comparable<GameState> {
     				townhallPos.euclideanDistance(findNearestGold(townhallPos).pos) - p.pos.euclideanDistance(findNearestGold(townhallPos).pos));
     		nearToResource += pNearestResource;
     	}
-        return goldCost + woodCost - nearToResource;
+        return Math.round((goldCost + woodCost - nearToResource) * 1000)/1000.0;
     }
 
     /**
@@ -461,6 +462,21 @@ public class GameState implements Comparable<GameState> {
 	        	this.currentGold == other.currentGold &&
 	        	this.currentWood == other.currentWood &&
 	        	this.townhallFood == other.townhallFood;
+    		if(same) {
+    			for(StripsAction action : this.prerequisiteActions) {
+    				boolean actionFound = false;
+    				for(StripsAction otherA : other.prerequisiteActions) {
+    					if(action.equals(otherA)) {
+    						actionFound = true;
+    						break;
+    					}
+    				}
+    				if(!actionFound) {
+    					same = false;
+    					break;
+    				}
+    			}
+    		}
     		if(same) {
 	        	for(Peasant p : this.peasants) {
 	        		boolean peasantFound = false;
