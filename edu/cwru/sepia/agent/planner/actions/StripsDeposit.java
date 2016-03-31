@@ -6,7 +6,7 @@ import edu.cwru.sepia.agent.planner.ResourceType;
 
 public class StripsDeposit implements StripsAction{
 
-	Peasant depositer;
+	public Peasant depositer;
 	//Save the resourceType in this variable since depositer's holding will become null when this action is applied
 	ResourceType resourceType;
 	

@@ -1,6 +1,7 @@
 package edu.cwru.sepia.agent.planner;
 
 import edu.cwru.sepia.action.Action;
+import edu.cwru.sepia.action.ActionResult;
 import edu.cwru.sepia.agent.Agent;
 import edu.cwru.sepia.agent.planner.actions.*;
 import edu.cwru.sepia.environment.model.history.History;
@@ -8,10 +9,13 @@ import edu.cwru.sepia.environment.model.state.ResourceType;
 import edu.cwru.sepia.environment.model.state.State;
 import edu.cwru.sepia.environment.model.state.Template;
 import edu.cwru.sepia.environment.model.state.Unit;
+import edu.cwru.sepia.environment.model.state.Unit.UnitView;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -21,7 +25,7 @@ import java.util.Stack;
 public class PEAgent extends Agent {
 
     // The plan being executed
-    private Stack<StripsAction> plan = null;
+    private List<StripsAction> plan = null;
 
     // maps the real unit Ids to the plan's unit ids
     // when you're planning you won't know the true unit IDs that sepia assigns. So you'll use placeholders (1, 2, 3).
@@ -33,7 +37,7 @@ public class PEAgent extends Agent {
     public PEAgent(int playernum, Stack<StripsAction> plan) {
         super(playernum);
         peasantIdMap = new HashMap<Integer, Integer>();
-        this.plan = plan;
+        this.plan = createOrderedList(plan);
 
     }
 
@@ -92,8 +96,32 @@ public class PEAgent extends Agent {
      */
     @Override
     public Map<Integer, Action> middleStep(State.StateView stateView, History.HistoryView historyView) {
-        // TODO: Implement me!
-        return null;
+    	
+    	Map<Integer, Action> sepiaActions = new HashMap<Integer, Action>();
+    	boolean stillExecuting = false;
+    	
+    	// loop through all peasants to find if any are still executing
+    	for(UnitView u : stateView.getAllUnits()){
+			// verify they are peasants
+			if (u.getTemplateView().getName().equals("Peasant")) {
+				// check if it is executing still
+				Map<Integer, ActionResult> results = historyView
+						.getCommandFeedback(0, stateView.getTurnNumber() - 1);
+				for (ActionResult result : results.values()) {
+					if (result.getFeedback().toString().equals("INCOMPLETE")) {
+						stillExecuting = true;
+					}
+				}
+			}
+		}
+    	
+    	// do next action if we are done with everything
+    	if (stillExecuting == false){
+    		//----------TODO
+    		sepiaActions.put(1, createSepiaAction(plan.get(0)));
+    	}
+    	
+        return sepiaActions;
     }
 
     /**
@@ -102,20 +130,48 @@ public class PEAgent extends Agent {
      * @return SEPIA representation of same action
      */
     private Action createSepiaAction(StripsAction action) {
+    	Action returnAction = null;
+    	
         if(action instanceof StripsMove){
-        	//return Action.createCompoundMove((StripsMove) 
-        	return null;
+        	StripsMove move = (StripsMove) action;
+        	returnAction = 
+        			Action.createCompoundMove(peasantIdMap.get(move.mover.id),
+        									  move.location.pos.x,
+        									  move.location.pos.y);
+        	
         } else if (action instanceof StripsCollect){
-        	return null;
+        	StripsCollect collect = (StripsCollect) action;
+        	returnAction = 
+        			Action.createPrimitiveGather(peasantIdMap.get(collect.collector.id),
+        					collect.collector.pos.getDirection(collect.collection.pos));
+        	// needs to figure out direction
+        	
         } else if (action instanceof StripsDeposit){
-        	return null;
+        	StripsDeposit deposit = (StripsDeposit) action;
+        	returnAction = 
+        			Action.createCompoundDeposit(peasantIdMap.get(deposit.depositer.id), peasantTemplateId);
+        	
         } else if (action instanceof StripsBuildPeasant){
-        	return null;
+        	StripsBuildPeasant build = (StripsBuildPeasant) action;
+        	returnAction = 
+        			Action.createPrimitiveProduction(townhallId, peasantTemplateId);
+        	
         } else {
         	System.err.println("Unhandled attempt to convert STRIPS action to SEPIA action");
-        	return null;
         }
+        return returnAction;
 
+    }
+    
+    private List<StripsAction> createOrderedList(Stack<StripsAction> actions){
+    	
+    	StripsAction[] planArray = actions.toArray(new StripsAction[actions.size()]);
+    	List<StripsAction> orderedActions = new ArrayList<StripsAction>();
+    	
+    	for (int i = planArray.length; i > 0; i--){
+    		orderedActions.add(planArray[i-1]);
+    	}
+    	return orderedActions;
     }
 
     @Override
