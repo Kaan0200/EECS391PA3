@@ -10,6 +10,8 @@ public class StripsDeposit_2 implements StripsAction{
 	private Peasant depositer2;
 	//Save the resourceType in this variable since depositer's holding will become null when this action is applied
 	ResourceType resourceType;
+	private int curWood;
+	private int curGold;
 	
 	public StripsDeposit_2(Peasant depositer, Peasant depositer2){
 		this.depositer = depositer;
@@ -44,6 +46,8 @@ public class StripsDeposit_2 implements StripsAction{
 		} else {
 			System.err.println("Unhandled attempt to deposit unknown resource type");
 		}
+		curWood = state.currentWood;
+		curGold = state.currentGold;
 		
 		state.cost++;
 		state.prerequisiteActions.add(this);
@@ -53,7 +57,8 @@ public class StripsDeposit_2 implements StripsAction{
 	
 	@Override
 	public String toString() {
-		return "DEPOSIT_2 P" + depositer.id + "&" + depositer2.id + " " + resourceType + " TO TOWNHALL";
+		return "DEPOSIT_2 P" + depositer.id + "&" + depositer2.id + " " + resourceType + 
+				" TO TOWNHALL - CG:" + curGold + " CW:" + curWood;
 	}
 	
 	@Override

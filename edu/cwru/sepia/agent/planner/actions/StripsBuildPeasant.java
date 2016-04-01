@@ -11,7 +11,7 @@ public class StripsBuildPeasant implements StripsAction {
 	public boolean preconditionsMet(GameState state) {
 		// state must have more then 0 food and enough gold
 		return ((state.townhallFood > 0) &&
-				(state.currentGold > 400));
+				(state.currentGold >= 400));
 	}
 
 	@Override

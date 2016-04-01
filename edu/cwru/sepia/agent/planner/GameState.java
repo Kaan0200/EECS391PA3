@@ -366,7 +366,7 @@ public class GameState implements Comparable<GameState> {
 		double distShortestResource = townhallPos.euclideanDistance(findNearestResource(townhallPos).pos);
     	//Estimate the number of trips it will take to transport the required amount of resource from the nearest
     	//source to the townhall.  Multiply by 2 to account for round trips.
-    	double goldTrips = (Math.max((requiredGold-currentGold),0)/(100 * peasants.size())) * 2;
+    	double goldTrips = (Math.max((requiredGold-currentGold),0)/(100 * peasants.size())) * 2; //Adding more peasants will reduce this number
     	double goldCost = goldTrips * distShortestResource;
     	
     	double woodTrips = (Math.max((requiredWood-currentWood),0)/(100 * peasants.size())) * 2;
