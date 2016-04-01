@@ -325,6 +325,32 @@ public class GameState implements Comparable<GameState> {
 		}
 		return nearestGold;
 	}
+	
+	/**
+	 * For the heuristic, we need the unchanging value of the nearest resource, regardless of whether it is empty
+	 * @param p
+	 * @return
+	 */
+	public Resource findNearestResource(Position p) {
+		ArrayList<Pair<Resource,Double>> resourceDistances = new ArrayList<>();
+		for(Resource r : resources) {
+			resourceDistances.add(new Pair<Resource,Double>(r,r.pos.euclideanDistance(p)));
+		}
+		//Find min distance
+		Resource nearest = null;
+		double minDist = Double.MAX_VALUE;
+		for(Pair<Resource,Double> pair : resourceDistances) {
+			if(pair.b < minDist) {
+				nearest = pair.a;
+				minDist = pair.b;
+			}
+		}
+		if(nearest == null) {
+			//System.err.println("There don't appear to be any non-empty gold mines left!");
+			nearest = resources.get(0);
+		}
+		return nearest;
+	}
 
 	/**
      * Write your heuristic function here. Remember this must be admissible for the properties of A* to hold. If you
@@ -337,7 +363,7 @@ public class GameState implements Comparable<GameState> {
     public double heuristic() {
     	double distTownToNearestGold = townhallPos.euclideanDistance(findNearestGold(townhallPos).pos);
 		double distTownToNearestWood = townhallPos.euclideanDistance(findNearestWood(townhallPos).pos);
-		double distShortestResource = Math.min(distTownToNearestGold, distTownToNearestWood);
+		double distShortestResource = townhallPos.euclideanDistance(findNearestResource(townhallPos).pos);
     	//Estimate the number of trips it will take to transport the required amount of resource from the nearest
     	//source to the townhall.  Multiply by 2 to account for round trips.
     	double goldTrips = (Math.max((requiredGold-currentGold),0)/(100 * peasants.size())) * 2;
@@ -364,7 +390,7 @@ public class GameState implements Comparable<GameState> {
     			}
     			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
     			if(p.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
-    				goldCost -= tripsSaved * distShortestResource;
+    				goldCost -= (tripsSaved + .4) * distShortestResource;
     			}
     			else if(p.holding.a == ResourceType.WOOD && (requiredWood - currentWood > 0)) {
     				woodCost -= tripsSaved * distShortestResource;
@@ -372,7 +398,7 @@ public class GameState implements Comparable<GameState> {
     		}
     		else {
 	    		if(p.nextToGold) {
-	    			goldCost -= .75 * distShortestResource;
+	    			goldCost -= 1.15 * distTownToNearestGold;
 	    		}
 	    		if(p.nextToWood) {
 	    			woodCost -= .75 * distShortestResource;
@@ -386,6 +412,9 @@ public class GameState implements Comparable<GameState> {
     		if(woodCost <= 0) {
 				woodCost = 0;
 			}
+    		//Reward depositing
+    		goldCost += (requiredGold - currentGold)/50;
+    		woodCost += (requiredWood - currentWood)/50;
     		
     		//Start penalties
     		
@@ -442,6 +471,7 @@ public class GameState implements Comparable<GameState> {
     		if(woodCost <= 0) {
 				woodCost = 0;
 			}
+    		//Reward depositing
     		goldCost += (requiredGold - currentGold)/50;
     		woodCost += (requiredWood - currentWood)/50;
     		
