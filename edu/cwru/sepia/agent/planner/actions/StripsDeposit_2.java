@@ -13,7 +13,7 @@ public class StripsDeposit_2 implements StripsAction{
 	
 	public StripsDeposit_2(Peasant depositer, Peasant depositer2){
 		this.depositer = depositer;
-		this.depositer2 = depositer;
+		this.depositer2 = depositer2;
 		if(depositer.holding != null && depositer2.holding != null) {
 			resourceType = depositer.holding.a;
 		}

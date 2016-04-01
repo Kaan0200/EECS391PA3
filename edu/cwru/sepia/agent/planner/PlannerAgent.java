@@ -28,8 +28,8 @@ public class PlannerAgent extends Agent {
             System.err.println("You must specify the required wood and gold amounts and whether peasants should be built");
         }
 
-        requiredWood = Integer.parseInt(params[0]);
-        requiredGold = Integer.parseInt(params[1]);
+        requiredGold = Integer.parseInt(params[0]);
+        requiredWood = Integer.parseInt(params[1]);
         buildPeasants = Boolean.parseBoolean(params[2]);
 
 
@@ -154,7 +154,7 @@ public class PlannerAgent extends Agent {
     	ArrayList<Map.Entry<GameState, Double>> sortedOptions = sortHashMap(heuristicCosts);
     	System.out.println("--Sorted Options--");
     	for(Map.Entry<GameState, Double> entry : sortedOptions) {
-    		System.out.println(entry.getKey().prerequisiteActions.get(0).toString() + " H+C val: " + entry.getValue());
+    		System.out.println(entry.getKey().prerequisiteActions.get(0).toString() + " H+C: " + entry.getValue() + " H:" + entry.getKey().heuristic() + " C:" + entry.getKey().getCost());
     	}
     	System.out.println("------------------");
     	
@@ -164,6 +164,9 @@ public class PlannerAgent extends Agent {
     	//For each of the viable options from this node, try to find a path to the goal starting from the most promising cell and work down.
         for(Map.Entry<GameState, Double> m : sortedOptions) {
         	//Is m the goal? If so, return a path that ends in this cell, as the cell NEXT to the goal is the real final destination for the stack
+        	if(m.getKey().currentGold == 4000) {
+        		System.out.println("Too much gold!");
+        	}
         	if(m.getKey().isGoal()) {
             	Stack<GameState> path = new Stack<>();
             	path.push(m.getKey());

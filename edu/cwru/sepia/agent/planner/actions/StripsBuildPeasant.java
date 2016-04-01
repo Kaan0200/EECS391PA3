@@ -29,6 +29,9 @@ public class StripsBuildPeasant implements StripsAction {
 		
 		state.currentGold -= 400;
 		state.townhallFood -= 1;
+		if(state.peasants.size() >= state.maxPeasants) {
+			state.allowBuildPeasants = false;
+		}
 		//Assume that this has no cost for now
 		state.prerequisiteActions.add(this);
 		return state;
