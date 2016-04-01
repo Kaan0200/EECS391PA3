@@ -348,6 +348,9 @@ public class GameState implements Comparable<GameState> {
     	//If any peasant is nearer to a resource than the distance between the townhall and that resource, let it count in the agent's favor
     	double nearToResource = 0;
     	
+    	/*
+    	 * I didn't want to have to, but the following calculations are separated by the number of peasants
+    	 */
     	switch(peasants.size()) {
     	case 1:
     		Peasant p = peasants.get(0);
@@ -420,6 +423,17 @@ public class GameState implements Comparable<GameState> {
     			woodCost -= 1.5 * distTownToNearestWood;
     		}
     		
+    		//Penalize traveling to a new resource if already holding something
+    		boolean p1NewResourceOldGoods = p1.holding != null && ((p1.holding.a == ResourceType.WOOD && p1.nextToGold) ||
+    				(p1.holding.a == ResourceType.GOLD && p1.nextToWood));
+    		boolean p2NewResourceOldGoods = p2.holding != null && ((p2.holding.a == ResourceType.WOOD && p2.nextToGold) ||
+    				(p2.holding.a == ResourceType.GOLD && p2.nextToWood));
+    		if(p1NewResourceOldGoods || p2NewResourceOldGoods) {
+    			goldCost += 100;
+    			woodCost += 100;
+    		}
+    		
+    		//Penalizing trying to collect more of a resource than is required!
     		boolean overstockingWood2 = (requiredWood - currentWood) <= 0 && 
     				((p1.holding != null && p1.holding.a == ResourceType.WOOD) || 
     						(p2.holding != null && p2.holding.a == ResourceType.WOOD) || p1.nextToWood || p2.nextToWood);
@@ -440,7 +454,7 @@ public class GameState implements Comparable<GameState> {
     	/* I don't know why 1/1.6 is the magic ratio for this, but that seems to be a ratio
     	 * which appropriately balances the heuristic value and the cost
     	 */
-        return Math.round(((goldCost + woodCost - nearToResource) * 2/3.0) * 100)/100;
+        return Math.round(((goldCost + woodCost) * 2/3.0) * 100)/100;
     }
 
     /**
