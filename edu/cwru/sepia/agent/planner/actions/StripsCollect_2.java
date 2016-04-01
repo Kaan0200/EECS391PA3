@@ -40,9 +40,15 @@ public class StripsCollect_2 implements StripsAction {
 		collector = state.getPeasant(collector.id);
 		collector2 = state.getPeasant(collector2.id);
 		collection = state.getResource(collection.id);
-		collector.holding = new Pair<>(collection.type, 100);
-		collector2.holding = new Pair<>(collection.type, 100);
-		collection.quantity = collection.quantity-100;
+		if(collection.quantity >= 200) {
+			collector.holding = new Pair<>(collection.type, 100);
+			collector2.holding = new Pair<>(collection.type, 100);
+			collection.quantity = collection.quantity-200;
+		} else {
+			collector.holding = new Pair<>(collection.type, collection.quantity/2);
+			collector2.holding = new Pair<>(collection.type, collection.quantity/2);
+			collection.quantity = 0;
+		}
 		state.cost++;
 		state.prerequisiteActions.add(this);
 		return state;

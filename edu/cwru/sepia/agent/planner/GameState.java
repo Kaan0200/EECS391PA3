@@ -337,13 +337,14 @@ public class GameState implements Comparable<GameState> {
     public double heuristic() {
     	double distTownToNearestGold = townhallPos.euclideanDistance(findNearestGold(townhallPos).pos);
 		double distTownToNearestWood = townhallPos.euclideanDistance(findNearestWood(townhallPos).pos);
+		double distShortestResource = Math.min(distTownToNearestGold, distTownToNearestWood);
     	//Estimate the number of trips it will take to transport the required amount of resource from the nearest
     	//source to the townhall.  Multiply by 2 to account for round trips.
     	double goldTrips = (Math.max((requiredGold-currentGold),0)/(100 * peasants.size())) * 2;
-    	double goldCost = goldTrips * distTownToNearestGold;
+    	double goldCost = goldTrips * distShortestResource;
     	
     	double woodTrips = (Math.max((requiredWood-currentWood),0)/(100 * peasants.size())) * 2;
-    	double woodCost = woodTrips * distTownToNearestWood;
+    	double woodCost = woodTrips * distShortestResource;
     	
     	//If any peasant is nearer to a resource than the distance between the townhall and that resource, let it count in the agent's favor
     	double nearToResource = 0;
@@ -363,25 +364,40 @@ public class GameState implements Comparable<GameState> {
     			}
     			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
     			if(p.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
-    				goldCost -= tripsSaved * distTownToNearestGold;
-    				if(goldCost <= 0) {
-    					goldCost = 0;
-    				}
+    				goldCost -= tripsSaved * distShortestResource;
     			}
     			else if(p.holding.a == ResourceType.WOOD && (requiredWood - currentWood > 0)) {
-    				woodCost -= tripsSaved * distTownToNearestWood;
-    				if(woodCost <= 0) {
-    					woodCost = 0;
-    				}
+    				woodCost -= tripsSaved * distShortestResource;
     			}
     		}
-    		if(p.nextToGold) {
-    			goldCost -= .75 * distTownToNearestGold;
-    		}
-    		if(p.nextToWood) {
-    			woodCost -= .75 * distTownToNearestWood;
+    		else {
+	    		if(p.nextToGold) {
+	    			goldCost -= .75 * distShortestResource;
+	    		}
+	    		if(p.nextToWood) {
+	    			woodCost -= .75 * distShortestResource;
+	    		}
     		}
     		
+    		//End reductions - make sure that all cost values are positive
+    		if(goldCost <= 0) {
+				goldCost = 0;
+			}
+    		if(woodCost <= 0) {
+				woodCost = 0;
+			}
+    		
+    		//Start penalties
+    		
+    		//Penalize traveling to a new resource if already holding something
+    		boolean pNewResourceOldGoods = p.holding != null && ((p.holding.a == ResourceType.WOOD && p.nextToGold) ||
+    				(p.holding.a == ResourceType.GOLD && p.nextToWood));
+    		if(pNewResourceOldGoods) {
+    			goldCost += 100;
+    			woodCost += 100;
+    		}
+    		
+    		//Penalizing trying to collect more of a resource than is required!
     		boolean overstockingWood = (requiredWood - currentWood) <= 0 && 
     				((p.holding != null && p.holding.a == ResourceType.WOOD) || p.nextToWood);
     		boolean overstockingGold = (requiredGold - currentGold) <= 0 && 
@@ -404,24 +420,32 @@ public class GameState implements Comparable<GameState> {
     			}
     			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
     			if(p1.holding.a == ResourceType.GOLD && p2.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
-    				goldCost -= tripsSaved * distTownToNearestGold;
-    				if(goldCost <= 0) {
-    					goldCost = 0;
-    				}
+    				goldCost -= tripsSaved * distShortestResource;
     			}
     			else if(p1.holding.a == ResourceType.WOOD && p2.holding.a == ResourceType.WOOD && (requiredWood - currentWood > 0)) {
-    				woodCost -= tripsSaved * distTownToNearestWood;
-    				if(woodCost <= 0) {
-    					woodCost = 0;
-    				}
+    				woodCost -= tripsSaved * distShortestResource;
     			}
     		}
-    		if(p1.nextToGold && p2.nextToGold) {
-    			goldCost -= 1.5 * distTownToNearestGold;
+    		else {
+	    		if(p1.nextToGold && p2.nextToGold) {
+	    			goldCost -= 1.5 * distShortestResource;
+	    		}
+	    		if(p1.nextToWood && p2.nextToWood) {
+	    			woodCost -= 1.5 * distShortestResource;
+	    		}
     		}
-    		if(p1.nextToWood && p2.nextToWood) {
-    			woodCost -= 1.5 * distTownToNearestWood;
-    		}
+    		
+    		//End reductions - make sure that all cost values are positive
+    		if(goldCost <= 0) {
+				goldCost = 0;
+			}
+    		if(woodCost <= 0) {
+				woodCost = 0;
+			}
+    		goldCost += (requiredGold - currentGold)/50;
+    		woodCost += (requiredWood - currentWood)/50;
+    		
+    		//Start penalties
     		
     		//Penalize traveling to a new resource if already holding something
     		boolean p1NewResourceOldGoods = p1.holding != null && ((p1.holding.a == ResourceType.WOOD && p1.nextToGold) ||
@@ -429,6 +453,7 @@ public class GameState implements Comparable<GameState> {
     		boolean p2NewResourceOldGoods = p2.holding != null && ((p2.holding.a == ResourceType.WOOD && p2.nextToGold) ||
     				(p2.holding.a == ResourceType.GOLD && p2.nextToWood));
     		if(p1NewResourceOldGoods || p2NewResourceOldGoods) {
+    			//System.err.println("NewResourceOldGoods alert");
     			goldCost += 100;
     			woodCost += 100;
     		}
@@ -441,9 +466,11 @@ public class GameState implements Comparable<GameState> {
     				((p1.holding != null && p1.holding.a == ResourceType.GOLD) || 
     						(p2.holding != null && p2.holding.a == ResourceType.GOLD) || p1.nextToGold || p2.nextToGold);
     		if(overstockingWood2) {
+    			//System.err.println("Overstocking alert");
     			woodCost += 200;
     		}
     		if(overstockingGold2) {
+    			//System.err.println("Overstocking alert2");
     			goldCost += 200;
     		}
     		
@@ -451,10 +478,8 @@ public class GameState implements Comparable<GameState> {
     	default:
     		break;
     	}
-    	/* I don't know why 1/1.6 is the magic ratio for this, but that seems to be a ratio
-    	 * which appropriately balances the heuristic value and the cost
-    	 */
-        return Math.round(((goldCost + woodCost) * 2/3.0) * 100)/100;
+    	
+        return Math.round(((goldCost + woodCost) * 2/3.0) * 100.0)/100.0;
     }
 
     /**
