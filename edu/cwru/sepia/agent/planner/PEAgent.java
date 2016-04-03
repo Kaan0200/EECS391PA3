@@ -127,9 +127,9 @@ public class PEAgent extends Agent {
     	// do next action if we are done with everything
     	if (stillExecuting == false){
     		List<Action> next = createSepiaAction(plan.pop(), stateView);
-    		System.out.println(next.toString());
     		
     		for (int i = 0; i < next.size(); i++) {
+    			System.out.println(next.get(i).toString());
     			// if this is a produce then apply the move to the townhall with ID = 0
     			sepiaActions.put(next.get(i).getType() == ActionType.PRIMITIVEPRODUCE ? i : i+1 , next.get(i));
     		}
