@@ -5,17 +5,19 @@ import edu.cwru.sepia.agent.planner.GameState;
 import edu.cwru.sepia.agent.planner.ResourceType;
 import edu.cwru.sepia.util.Pair;
 
-public class StripsCollect_2 implements StripsAction {
+public class StripsCollect_3 implements StripsAction {
 	
 	private Peasant collector;
 	private Peasant collector2;
+	private Peasant collector3;
 	private Resource collection;
 
 	
-	public StripsCollect_2(Peasant collector, Peasant collector2, Resource collection){
+	public StripsCollect_3(Peasant collector, Peasant collector2, Peasant collector3, Resource collection){
 		this.collection = collection;
 		this.collector = collector;
 		this.collector2 = collector2;
+		this.collector3 = collector3;
 	}
 	
 	@Override
@@ -24,11 +26,13 @@ public class StripsCollect_2 implements StripsAction {
 		if(collection.type == ResourceType.GOLD) {
 			return collector.nextToGold && collector.holding == null &&
 					collector2.nextToGold && collector2.holding == null &&
+					collector3.nextToGold && collector3.holding == null &&
 					collection.quantity > 0;
 		}
 		else if (collection.type == ResourceType.WOOD) {
 			return collector.nextToWood && collector.holding == null &&
 					collector2.nextToWood && collector2.holding == null &&
+					collector3.nextToWood && collector3.holding == null &&
 					collection.quantity > 0; 
 		}
 		else {
@@ -43,14 +47,17 @@ public class StripsCollect_2 implements StripsAction {
 		 */
 		collector = state.getPeasant(collector.id);
 		collector2 = state.getPeasant(collector2.id);
+		collector3 = state.getPeasant(collector3.id);
 		collection = state.getResource(collection.id);
 		if(collection.quantity >= 200) {
 			collector.holding = new Pair<>(collection.type, 100);
 			collector2.holding = new Pair<>(collection.type, 100);
+			collector3.holding = new Pair<>(collection.type, 100);
 			collection.quantity = collection.quantity-200;
 		} else {
 			collector.holding = new Pair<>(collection.type, collection.quantity/2);
 			collector2.holding = new Pair<>(collection.type, collection.quantity/2);
+			collector3.holding = new Pair<>(collection.type, collection.quantity/2);
 			collection.quantity = 0;
 		}
 		state.cost++;
@@ -60,7 +67,7 @@ public class StripsCollect_2 implements StripsAction {
 	
 	@Override
 	public String toString() {
-		return "COLLECT_2 P" + collector.id + "&" + collector2.id + " " + collection.type + " " + (collector.holding.b + collector2.holding.b);
+		return "COLLECT_3 P" + collector.id + "&" + collector2.id + "&" + collector3.id + " " + collection.type + " " + (collector.holding.b + collector2.holding.b);
 	}
 	
 	@Override
@@ -80,6 +87,10 @@ public class StripsCollect_2 implements StripsAction {
 	
 	public Peasant getCollector2() {
 		return collector2;
+	}
+	
+	public Peasant getCollector3() {
+		return collector3;
 	}
 	
 	public Resource getCollection() {
