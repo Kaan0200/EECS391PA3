@@ -88,6 +88,19 @@ public class PEAgent extends Agent {
      */
     @Override
     public Map<Integer, Action> middleStep(State.StateView stateView, History.HistoryView historyView) {
+    	// if a new peasant is added we don't have it in the peasant Map
+    	// remove one from unit because of townhall
+    	if (peasantIdMap.size() < stateView.getAllUnits().size()-1) {
+    		for(UnitView u : stateView.getAllUnits()){
+    			if (u.getID() == 0) {
+    				// we don't care about the townhall
+    			} else {
+    				if (!peasantIdMap.values().contains(u.getID())){
+    					peasantIdMap.put(peasantIdMap.size()+1, u.getID());
+    				}
+    			}
+    		}
+    	}
     	
     	Map<Integer, Action> sepiaActions = new HashMap<Integer, Action>();
     	boolean stillExecuting = false;
