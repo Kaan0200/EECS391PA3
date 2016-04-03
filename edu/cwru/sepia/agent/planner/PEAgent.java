@@ -2,6 +2,7 @@ package edu.cwru.sepia.agent.planner;
 
 import edu.cwru.sepia.action.Action;
 import edu.cwru.sepia.action.ActionResult;
+import edu.cwru.sepia.action.ActionType;
 import edu.cwru.sepia.agent.Agent;
 import edu.cwru.sepia.agent.planner.actions.*;
 import edu.cwru.sepia.environment.model.history.History;
@@ -112,9 +113,13 @@ public class PEAgent extends Agent {
     	}
     	// do next action if we are done with everything
     	if (stillExecuting == false){
-    		Action next = createSepiaAction(plan.pop(), stateView);
+    		List<Action> next = createSepiaAction(plan.pop(), stateView);
     		System.out.println(next.toString());
-    		sepiaActions.put(1, next);
+    		
+    		for (int i = 0; i < next.size(); i++) {
+    			// if this is a produce then apply the move to the townhall with ID = 0
+    			sepiaActions.put(next.get(i).getType() == ActionType.PRIMITIVEPRODUCE ? i : i+1 , next.get(i));
+    		}
     	}
     	
         return sepiaActions;
@@ -125,49 +130,94 @@ public class PEAgent extends Agent {
      * @param action StripsAction
      * @return SEPIA representation of same action
      */
-    private Action createSepiaAction(StripsAction action, State.StateView state) {
-    	Action returnAction = null;
+    private List<Action> createSepiaAction(StripsAction action, State.StateView state) {
+    	List<Action> returnAction = new ArrayList<Action>();
     	
         if(action instanceof StripsMove){
         	StripsMove move = (StripsMove) action;
         	// moving back to townhall
         	if (move.location == null) {
-        		returnAction =
+        		returnAction.add(
         				Action.createCompoundMove(peasantIdMap.get(move.mover.id),
         						state.getUnit(townhallId).getXPosition(),
-        						state.getUnit(townhallId).getYPosition());
+        						state.getUnit(townhallId).getYPosition()));
         						
         	} else {
-        		returnAction = 
+        		returnAction.add(
         				Action.createCompoundMove(peasantIdMap.get(move.mover.id),
         									  	move.location.pos.x,
-        									  	move.location.pos.y);
+        									  	move.location.pos.y));
         	}
         	
         } else if (action instanceof StripsCollect){
         	StripsCollect collect = (StripsCollect) action;
-        	returnAction = 
+        	returnAction.add(
         			Action.createPrimitiveGather(peasantIdMap.get(collect.getCollector().id),
         					new Position(state.getUnit(peasantIdMap.get(collect.getCollector().id)).getXPosition(),
         							     state.getUnit(peasantIdMap.get(collect.getCollector().id)).getYPosition()).getDirection(
-        							    		 collect.getCollection().pos));
+        							    		 collect.getCollection().pos)));
         	// needs to figure out direction
         	
         } else if (action instanceof StripsDeposit){
         	StripsDeposit deposit = (StripsDeposit) action;
-        	returnAction = 
+        	returnAction.add(
         			Action.createPrimitiveDeposit(peasantIdMap.get(deposit.getDepositer().id),
         					new Position(state.getUnit(peasantIdMap.get(deposit.getDepositer().id)).getXPosition(),
    							             state.getUnit(peasantIdMap.get(deposit.getDepositer().id)).getYPosition()).getDirection(
    							            		 		new Position(state.getUnit(townhallId).getXPosition(),
-   							            				state.getUnit(townhallId).getYPosition())));
+   							            				state.getUnit(townhallId).getYPosition()))));
         	
         } else if (action instanceof StripsBuildPeasant){
-        	StripsBuildPeasant build = (StripsBuildPeasant) action;
-        	returnAction = 
-        			Action.createPrimitiveProduction(townhallId, peasantTemplateId);
+        	//StripsBuildPeasant build = (StripsBuildPeasant) action;
+        	returnAction.add(Action.createPrimitiveProduction(townhallId, peasantTemplateId));
         	
-        } else {
+        }else if (action instanceof StripsMove_2) {
+        	StripsMove_2 move = (StripsMove_2) action;
+        	if (move.getLocation() == null){
+        		returnAction.add (
+        				Action.createCompoundMove(peasantIdMap.get(move.getMover().id),
+        						state.getUnit(townhallId).getXPosition(),
+        						state.getUnit(townhallId).getYPosition()));
+        		returnAction.add (Action.createCompoundMove(peasantIdMap.get(move.getMover2().id),
+						state.getUnit(townhallId).getXPosition(),
+						state.getUnit(townhallId).getYPosition()));
+        	} else {
+        		returnAction.add(Action.createCompoundMove(peasantIdMap.get(move.getMover().id), move.getLocation().pos.x, move.getLocation().pos.y));
+        		returnAction.add(Action.createCompoundMove(peasantIdMap.get(move.getMover2().id),move.getLocation().pos.x, move.getLocation().pos.y));
+        	}
+        }else if (action instanceof StripsCollect_2) {
+        	
+        }else if (action instanceof StripsDeposit_2) {
+        	
+        }else if (action instanceof StripsMove_3) {
+        	StripsMove_3 move = (StripsMove_3) action;
+        	if (move.getLocation() == null){
+        		returnAction.add (Action.createCompoundMove(peasantIdMap.get(move.getMover().id),
+        						state.getUnit(townhallId).getXPosition(),
+        						state.getUnit(townhallId).getYPosition()));
+        		returnAction.add (Action.createCompoundMove(peasantIdMap.get(move.getMover2().id),
+						state.getUnit(townhallId).getXPosition(),
+						state.getUnit(townhallId).getYPosition()));
+        		returnAction.add (Action.createCompoundMove(peasantIdMap.get(move.getMover3().id),
+						state.getUnit(townhallId).getXPosition(),
+						state.getUnit(townhallId).getYPosition()));
+        	} else {
+        		returnAction.add(Action.createCompoundMove(peasantIdMap.get(move.getMover().id),
+        									  	move.getLocation().pos.x,
+        									  	move.getLocation().pos.y));
+        		returnAction.add(Action.createCompoundMove(peasantIdMap.get(move.getMover2().id),
+        									  	move.getLocation().pos.x,
+        									  	move.getLocation().pos.y));
+        		returnAction.add(Action.createCompoundMove(peasantIdMap.get(move.getMover3().id),
+        									  	move.getLocation().pos.x,
+        									  	move.getLocation().pos.y));
+        	}
+        }else if (action instanceof StripsCollect_3) {
+        	
+        }else if (action instanceof StripsDeposit_3) {
+        	
+        }
+        else {
         	System.err.println("Unhandled attempt to convert STRIPS action to SEPIA action");
         }
         return returnAction;
