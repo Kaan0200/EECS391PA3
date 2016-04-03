@@ -374,143 +374,252 @@ public class GameState implements Comparable<GameState> {
     	double woodTrips = (Math.max((requiredWood-currentWood),0)/(100 * peasants.size())) * 2;
     	double woodCost = woodTrips * distShortestResource;
     	
-    	//If any peasant is nearer to a resource than the distance between the townhall and that resource, let it count in the agent's favor
-    	double nearToResource = 0;
+    	double totalResourceCost = 0;
     	
     	/*
     	 * I didn't want to have to, but the following calculations are separated by the number of peasants
     	 */
     	switch(peasants.size()) {
     	case 1:
-    		Peasant p = peasants.get(0);
-    		//If the peasant is holding a resource and is nextToTownhall, ready to deposit, then subtract a roundtrip from the cost to that resource
-    		//Actually, subtract ALMOST a full roundtrip.  Depositing will actually reduce by a full roundtrip.
-    		if(p.holding != null) {
-    			double tripsSaved = .85;
-    			if(p.nextToTownhall) {
-    				tripsSaved = 1.5;
-    			}
-    			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
-    			if(p.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
-    				goldCost -= (tripsSaved + .4) * distShortestResource;
-    			}
-    			else if(p.holding.a == ResourceType.WOOD && (requiredWood - currentWood > 0)) {
-    				woodCost -= tripsSaved * distShortestResource;
-    			}
-    		}
-    		else {
-	    		if(p.nextToGold) {
-	    			goldCost -= 1.15 * distTownToNearestGold;
-	    		}
-	    		if(p.nextToWood) {
-	    			woodCost -= .75 * distShortestResource;
-	    		}
-    		}
-    		
-    		//End reductions - make sure that all cost values are positive
-    		if(goldCost <= 0) {
-				goldCost = 0;
-			}
-    		if(woodCost <= 0) {
-				woodCost = 0;
-			}
-    		//Reward depositing
-    		goldCost += (requiredGold - currentGold)/50;
-    		woodCost += (requiredWood - currentWood)/50;
-    		
-    		//Start penalties
-    		
-    		//Penalize traveling to a new resource if already holding something
-    		boolean pNewResourceOldGoods = p.holding != null && ((p.holding.a == ResourceType.WOOD && p.nextToGold) ||
-    				(p.holding.a == ResourceType.GOLD && p.nextToWood));
-    		if(pNewResourceOldGoods) {
-    			goldCost += 100;
-    			woodCost += 100;
-    		}
-    		
-    		//Penalizing trying to collect more of a resource than is required!
-    		boolean overstockingWood = (requiredWood - currentWood) <= 0 && 
-    				((p.holding != null && p.holding.a == ResourceType.WOOD) || p.nextToWood);
-    		boolean overstockingGold = (requiredGold - currentGold) <= 0 && 
-    				((p.holding != null && p.holding.a == ResourceType.GOLD) || p.nextToGold);
-    		if(overstockingWood) {
-    			woodCost += 100;
-    		}
-    		if(overstockingGold) {
-    			goldCost += 100;
-    		}
-    		
+    		totalResourceCost = getHeuristic1Peasant(goldCost, woodCost, distShortestResource, distTownToNearestGold);
     		break;
     	case 2:
-    		Peasant p1 = peasants.get(0);
-    		Peasant p2 = peasants.get(1);
-    		if(p1.holding != null && p2.holding != null) {
-    			double tripsSaved = 1.75; //At least at the resource site and have collected
-    			if(p1.nextToTownhall && p2.nextToTownhall) { //Saved a full round trip
-    				tripsSaved = 3.5;
-    			}
-    			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
-    			if(p1.holding.a == ResourceType.GOLD && p2.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
-    				goldCost -= tripsSaved * distShortestResource;
-    			}
-    			else if(p1.holding.a == ResourceType.WOOD && p2.holding.a == ResourceType.WOOD && (requiredWood - currentWood > 0)) {
-    				woodCost -= tripsSaved * distShortestResource;
-    			}
-    		}
-    		else {
-	    		if(p1.nextToGold && p2.nextToGold) {
-	    			goldCost -= 1.5 * distShortestResource;
-	    		}
-	    		if(p1.nextToWood && p2.nextToWood) {
-	    			woodCost -= 1.5 * distShortestResource;
-	    		}
-    		}
-    		
-    		//End reductions - make sure that all cost values are positive
-    		if(goldCost <= 0) {
-				goldCost = 0;
-			}
-    		if(woodCost <= 0) {
-				woodCost = 0;
-			}
-    		//Reward depositing
-    		goldCost += (requiredGold - currentGold)/50;
-    		woodCost += (requiredWood - currentWood)/50;
-    		
-    		//Start penalties
-    		
-    		//Penalize traveling to a new resource if already holding something
-    		boolean p1NewResourceOldGoods = p1.holding != null && ((p1.holding.a == ResourceType.WOOD && p1.nextToGold) ||
-    				(p1.holding.a == ResourceType.GOLD && p1.nextToWood));
-    		boolean p2NewResourceOldGoods = p2.holding != null && ((p2.holding.a == ResourceType.WOOD && p2.nextToGold) ||
-    				(p2.holding.a == ResourceType.GOLD && p2.nextToWood));
-    		if(p1NewResourceOldGoods || p2NewResourceOldGoods) {
-    			goldCost += 100;
-    			woodCost += 100;
-    		}
-    		
-    		//Penalizing trying to collect more of a resource than is required!
-    		boolean overstockingWood2 = (requiredWood - currentWood) <= 0 && 
-    				((p1.holding != null && p1.holding.a == ResourceType.WOOD) || 
-    						(p2.holding != null && p2.holding.a == ResourceType.WOOD) || p1.nextToWood || p2.nextToWood);
-    		boolean overstockingGold2 = (requiredGold - currentGold) <= 0 && 
-    				((p1.holding != null && p1.holding.a == ResourceType.GOLD) || 
-    						(p2.holding != null && p2.holding.a == ResourceType.GOLD) || p1.nextToGold || p2.nextToGold);
-    		if(overstockingWood2) {
-    			woodCost += 200;
-    		}
-    		if(overstockingGold2) {
-    			goldCost += 200;
-    		}
-    		
+    		totalResourceCost = getHeuristic2Peasants(goldCost, woodCost, distShortestResource);    		
     		break;
+    	case 3:
+    		totalResourceCost = getHeuristic3Peasants(goldCost, woodCost, distShortestResource);
     	default:
     		break;
     	}
     	
-        return Math.round(((goldCost + woodCost) * 2/3.0) * 100.0)/100.0;
+        return Math.round((totalResourceCost * 2/3.0) * 100.0)/100.0;
     }
 
+    /**
+     * Gets the heuristic cost of reaching the goal state with only one peasant
+     * @param goldCost
+     * @param woodCost
+     * @param distShortestResource
+     * @param distTownToNearestGold
+     * @return
+     */
+    private double getHeuristic1Peasant(double goldCost, double woodCost, double distShortestResource, double distTownToNearestGold) {
+    	Peasant p = peasants.get(0);
+		//If the peasant is holding a resource and is nextToTownhall, ready to deposit, then subtract a roundtrip from the cost to that resource
+		//Actually, subtract ALMOST a full roundtrip.  Depositing will actually reduce by a full roundtrip.
+		if(p.holding != null) {
+			double tripsSaved = .85;
+			if(p.nextToTownhall) {
+				tripsSaved = 1.5;
+			}
+			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
+			if(p.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
+				goldCost -= (tripsSaved + .4) * distShortestResource;
+			}
+			else if(p.holding.a == ResourceType.WOOD && (requiredWood - currentWood > 0)) {
+				woodCost -= tripsSaved * distShortestResource;
+			}
+		}
+		else {
+    		if(p.nextToGold) {
+    			goldCost -= 1.15 * distTownToNearestGold;
+    		}
+    		if(p.nextToWood) {
+    			woodCost -= .75 * distShortestResource;
+    		}
+		}
+		
+		//End reductions - make sure that all cost values are positive
+		if(goldCost <= 0) {
+			goldCost = 0;
+		}
+		if(woodCost <= 0) {
+			woodCost = 0;
+		}
+		//Reward depositing
+		goldCost += (requiredGold - currentGold)/50;
+		woodCost += (requiredWood - currentWood)/50;
+		
+		//Start penalties
+		
+		//Penalize traveling to a new resource if already holding something
+		boolean pNewResourceOldGoods = p.holding != null && ((p.holding.a == ResourceType.WOOD && p.nextToGold) ||
+				(p.holding.a == ResourceType.GOLD && p.nextToWood));
+		if(pNewResourceOldGoods) {
+			goldCost += 100;
+			woodCost += 100;
+		}
+		
+		//Penalizing trying to collect more of a resource than is required!
+		boolean overstockingWood = (requiredWood - currentWood) <= 0 && 
+				((p.holding != null && p.holding.a == ResourceType.WOOD) || p.nextToWood);
+		boolean overstockingGold = (requiredGold - currentGold) <= 0 && 
+				((p.holding != null && p.holding.a == ResourceType.GOLD) || p.nextToGold);
+		if(overstockingWood) {
+			woodCost += 100;
+		}
+		if(overstockingGold) {
+			goldCost += 100;
+		}
+		
+		return goldCost + woodCost;
+    }
+    
+    /**
+     * Get heuristic cost for 2 peasants - includes some special cases that aren't relevant with 1 peasant.
+     * @param goldCost
+     * @param woodCost
+     * @param distShortestResource
+     * @return
+     */
+    private double getHeuristic2Peasants(double goldCost, double woodCost, double distShortestResource) {
+    	Peasant p1 = peasants.get(0);
+		Peasant p2 = peasants.get(1);
+		if(p1.holding != null && p2.holding != null) {
+			double tripsSaved = 1.75; //At least at the resource site and have collected
+			if(p1.nextToTownhall && p2.nextToTownhall) { //Saved a full round trip
+				tripsSaved = 3.5;
+			}
+			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
+			if(p1.holding.a == ResourceType.GOLD && p2.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
+				goldCost -= tripsSaved * distShortestResource;
+			}
+			else if(p1.holding.a == ResourceType.WOOD && p2.holding.a == ResourceType.WOOD && (requiredWood - currentWood > 0)) {
+				woodCost -= tripsSaved * distShortestResource;
+			}
+		}
+		else {
+    		if(p1.nextToGold && p2.nextToGold) {
+    			goldCost -= 1.5 * distShortestResource;
+    		}
+    		if(p1.nextToWood && p2.nextToWood) {
+    			woodCost -= 1.5 * distShortestResource;
+    		}
+		}
+		
+		//End reductions - make sure that all cost values are positive
+		if(goldCost <= 0) {
+			goldCost = 0;
+		}
+		if(woodCost <= 0) {
+			woodCost = 0;
+		}
+		//Reward depositing
+		goldCost += (requiredGold - currentGold)/50;
+		woodCost += (requiredWood - currentWood)/50;
+		
+		//Start penalties
+		
+		//Penalize traveling to a new resource if already holding something
+		boolean p1NewResourceOldGoods = p1.holding != null && ((p1.holding.a == ResourceType.WOOD && p1.nextToGold) ||
+				(p1.holding.a == ResourceType.GOLD && p1.nextToWood));
+		boolean p2NewResourceOldGoods = p2.holding != null && ((p2.holding.a == ResourceType.WOOD && p2.nextToGold) ||
+				(p2.holding.a == ResourceType.GOLD && p2.nextToWood));
+		if(p1NewResourceOldGoods || p2NewResourceOldGoods) {
+			goldCost += 100;
+			woodCost += 100;
+		}
+		
+		//Penalizing trying to collect more of a resource than is required!
+		boolean overstockingWood = (requiredWood - currentWood) <= 0 && 
+				((p1.holding != null && p1.holding.a == ResourceType.WOOD) || 
+						(p2.holding != null && p2.holding.a == ResourceType.WOOD) || p1.nextToWood || p2.nextToWood);
+		boolean overstockingGold = (requiredGold - currentGold) <= 0 && 
+				((p1.holding != null && p1.holding.a == ResourceType.GOLD) || 
+						(p2.holding != null && p2.holding.a == ResourceType.GOLD) || p1.nextToGold || p2.nextToGold);
+		if(overstockingWood) {
+			woodCost += 200;
+		}
+		if(overstockingGold) {
+			goldCost += 200;
+		}
+		
+		return goldCost + woodCost;
+    }
+    
+    /**
+     * Get heuristic cost for 3 peasants 
+     * @param goldCost
+     * @param woodCost
+     * @param distShortestResource
+     * @return
+     */
+    private double getHeuristic3Peasants(double goldCost, double woodCost, double distShortestResource) {
+    	Peasant p1 = peasants.get(0);
+		Peasant p2 = peasants.get(1);
+		Peasant p3 = peasants.get(2);
+		if(p1.holding != null && p2.holding != null && p3.holding != null) {
+			double tripsSaved = 2.75; //At least at the resource site and have collected
+			if(p1.nextToTownhall && p2.nextToTownhall && p3.nextToTownhall) { //Saved a full round trip
+				tripsSaved = 5.5;
+			}
+			//If a peasant is holding a resource, subtract one trips' worth of cost from that resource
+			if(p1.holding.a == ResourceType.GOLD && 
+					p2.holding.a == ResourceType.GOLD && 
+					p3.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
+				goldCost -= tripsSaved * distShortestResource;
+			}
+			else if(p1.holding.a == ResourceType.WOOD &&
+					p2.holding.a == ResourceType.WOOD && 
+					p3.holding.a == ResourceType.WOOD && (requiredWood - currentWood > 0)) {
+				woodCost -= tripsSaved * distShortestResource;
+			}
+		}
+		else {
+    		if(p1.nextToGold && p2.nextToGold && p3.nextToGold) {
+    			goldCost -= 2.5 * distShortestResource;
+    		}
+    		if(p1.nextToWood && p2.nextToWood && p3.nextToWood) {
+    			woodCost -= 2.5 * distShortestResource;
+    		}
+		}
+		
+		//End reductions - make sure that all cost values are positive
+		if(goldCost <= 0) {
+			goldCost = 0;
+		}
+		if(woodCost <= 0) {
+			woodCost = 0;
+		}
+		//Reward depositing
+		goldCost += (requiredGold - currentGold)/50;
+		woodCost += (requiredWood - currentWood)/50;
+		
+		//Start penalties
+		
+		//Penalize traveling to a new resource if already holding something
+		boolean p1NewResourceOldGoods = p1.holding != null && ((p1.holding.a == ResourceType.WOOD && p1.nextToGold) ||
+				(p1.holding.a == ResourceType.GOLD && p1.nextToWood));
+		boolean p2NewResourceOldGoods = p2.holding != null && ((p2.holding.a == ResourceType.WOOD && p2.nextToGold) ||
+				(p2.holding.a == ResourceType.GOLD && p2.nextToWood));
+		boolean p3NewResourceOldGoods = p3.holding != null && ((p3.holding.a == ResourceType.WOOD && p3.nextToGold) ||
+				(p3.holding.a == ResourceType.GOLD && p3.nextToWood));
+		if(p1NewResourceOldGoods || p2NewResourceOldGoods || p3NewResourceOldGoods) {
+			goldCost += 100;
+			woodCost += 100;
+		}
+		
+		//Penalizing trying to collect more of a resource than is required!
+		boolean overstockingWood = (requiredWood - currentWood) <= 0 && 
+				((p1.holding != null && p1.holding.a == ResourceType.WOOD) || 
+						(p2.holding != null && p2.holding.a == ResourceType.WOOD) ||
+						(p3.holding != null && p3.holding.a == ResourceType.WOOD) || 
+						p1.nextToWood || p2.nextToWood || p3.nextToWood);
+		boolean overstockingGold = (requiredGold - currentGold) <= 0 && 
+				((p1.holding != null && p1.holding.a == ResourceType.GOLD) || 
+						(p2.holding != null && p2.holding.a == ResourceType.GOLD) ||
+						(p3.holding != null && p3.holding.a == ResourceType.GOLD) || 
+						p1.nextToGold || p2.nextToGold || p3.nextToGold);
+		if(overstockingWood) {
+			woodCost += 200;
+		}
+		if(overstockingGold) {
+			goldCost += 200;
+		}
+		
+		return goldCost + woodCost;
+    }
+    
     /**
      *
      * Write the function that computes the current cost to get to this node. This is combined with your heuristic to
@@ -535,8 +644,9 @@ public class GameState implements Comparable<GameState> {
         if (this.equals(o)){
         	return 0;
         } else {
-        	return this.cost > o.cost ? 1 : 0;
+        	return this.cost > o.cost ? 1 : -1;
         }
+        //TODO: This isn't a particularly good comparison of two states- lots of different actions have the same cost.
 
     }
 
@@ -770,7 +880,7 @@ public class GameState implements Comparable<GameState> {
     private ArrayList<StripsAction> generateActionsFor3Peasants(ArrayList<StripsAction> peasantActions) {
     	for (Peasant p : peasants) {
     		Peasant p2 = peasants.get((p.id) % peasants.size());
-    		Peasant p3 = peasants.get((p.id) % peasants.size());
+    		Peasant p3 = peasants.get((p.id + 1) % peasants.size());
     		// check if we even need to be looking for more resources
     		if (p.holding != null && p2.holding != null && p3.holding != null){
     			// next to townhall

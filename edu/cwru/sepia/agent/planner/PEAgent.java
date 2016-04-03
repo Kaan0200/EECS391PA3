@@ -171,14 +171,14 @@ public class PEAgent extends Agent {
         	//StripsBuildPeasant build = (StripsBuildPeasant) action;
         	returnAction.add(Action.createPrimitiveProduction(townhallId, peasantTemplateId));
         	
-        }else if (action instanceof StripsMove_2) {
+        } else if (action instanceof StripsMove_2) {
         	StripsMove_2 move = (StripsMove_2) action;
         	if (move.getLocation() == null){
         		returnAction.add (
-        				Action.createCompoundMove(peasantIdMap.get(move.getMover().id),
+        				Action.createCompoundMove(move.getMover().id,
         						state.getUnit(townhallId).getXPosition(),
         						state.getUnit(townhallId).getYPosition()));
-        		returnAction.add (Action.createCompoundMove(peasantIdMap.get(move.getMover2().id),
+        		returnAction.add (Action.createCompoundMove(move.getMover2().id,
 						state.getUnit(townhallId).getXPosition(),
 						state.getUnit(townhallId).getYPosition()));
         	} else {
