@@ -483,7 +483,6 @@ public class GameState implements Comparable<GameState> {
     		boolean p2NewResourceOldGoods = p2.holding != null && ((p2.holding.a == ResourceType.WOOD && p2.nextToGold) ||
     				(p2.holding.a == ResourceType.GOLD && p2.nextToWood));
     		if(p1NewResourceOldGoods || p2NewResourceOldGoods) {
-    			//System.err.println("NewResourceOldGoods alert");
     			goldCost += 100;
     			woodCost += 100;
     		}
@@ -496,11 +495,9 @@ public class GameState implements Comparable<GameState> {
     				((p1.holding != null && p1.holding.a == ResourceType.GOLD) || 
     						(p2.holding != null && p2.holding.a == ResourceType.GOLD) || p1.nextToGold || p2.nextToGold);
     		if(overstockingWood2) {
-    			//System.err.println("Overstocking alert");
     			woodCost += 200;
     		}
     		if(overstockingGold2) {
-    			//System.err.println("Overstocking alert2");
     			goldCost += 200;
     		}
     		
