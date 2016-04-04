@@ -28,7 +28,7 @@ public class StripsBuildPeasant implements StripsAction {
 		state.peasants.add(p);
 		
 		state.currentGold -= 400;
-		state.townhallFood -= 1;
+		state.townhallFood --;
 
 		//Assume that this has no cost for now
 		state.prerequisiteActions.add(this);

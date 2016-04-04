@@ -138,7 +138,7 @@ public class GameState implements Comparable<GameState> {
     	prerequisiteActions = new ArrayList<StripsAction>();
     	currentGold = 0;
     	currentWood = 0;
-    	townhallFood = 3;
+    	townhallFood = 2;
     	peasants = new ArrayList<>();
     	resources = new ArrayList<>();
     	// get all resource nodes & peasants
