@@ -125,8 +125,7 @@ public class PEAgent extends Agent {
 			}
 		}
     	if (plan.isEmpty()){
-    		System.out.println("===========VICTORY============\n===Plan finished executing!===");
-    		System.exit(0);
+    		System.out.println("===Plan finished executing!===");
     		
     	}
     	// do next action if we are done with everything
