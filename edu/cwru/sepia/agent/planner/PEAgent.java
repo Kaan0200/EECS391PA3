@@ -242,9 +242,19 @@ public class PEAgent extends Agent {
         									  	move.getLocation().pos.y));
         	}
         }else if (action instanceof StripsCollect_3) {
+        	StripsCollect_3 collect = (StripsCollect_3) action;
+        	returnAction.add(Action.createCompoundGather(peasantIdMap.get(collect.getCollector().id), collect.getCollection().id));
+        	returnAction.add(Action.createCompoundGather(peasantIdMap.get(collect.getCollector2().id), collect.getCollection().id));
+        	returnAction.add(Action.createCompoundGather(peasantIdMap.get(collect.getCollector3().id), collect.getCollection().id));
         	
         }else if (action instanceof StripsDeposit_3) {
-        	
+        	StripsDeposit_3 deposit = (StripsDeposit_3) action;
+        	returnAction.add(Action.createCompoundDeposit(peasantIdMap.get(deposit.getDepositer().id),
+        			state.getUnit(townhallId).getID()));
+        	returnAction.add(Action.createCompoundDeposit(peasantIdMap.get(deposit.getDepositer2().id),
+        			state.getUnit(townhallId).getID()));
+        	returnAction.add(Action.createCompoundDeposit(peasantIdMap.get(deposit.getDepositer3().id),
+        			state.getUnit(townhallId).getID()));
         }
         else {
         	System.err.println("Unhandled attempt to convert STRIPS action to SEPIA action");
