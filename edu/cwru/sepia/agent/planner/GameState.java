@@ -219,9 +219,10 @@ public class GameState implements Comparable<GameState> {
 		ArrayList<StripsAction> peasantActions = new ArrayList<StripsAction>();
 	
 	  	peasantActions = generateActionsFor1Peasant(peasantActions);
-	  	if(peasants.size() == 2) {
+	  	if(peasants.size() > 1) {
 	  		peasantActions = generateActionsFor2Peasants(peasantActions);
-	  	} else if (peasants.size() > 2) {
+	  	}
+	  	if (peasants.size() > 2) {
 	  		peasantActions = generateActionsFor3Peasants(peasantActions);
 	  	}
 	  	
@@ -358,6 +359,14 @@ public class GameState implements Comparable<GameState> {
      * can come up with an easy way of computing a consistent heuristic that is even better, but not strictly necessary.
      *
      * Add a description here in your submission explaining your heuristic.
+     * Our heuristic tries to estimate the distance that the peasants will have to travel in order to collect
+     * the remaining resources.  It optimistically assumes that it will be able to collect all of the resources
+     * it needs from a radius equal to the nearest resource (even if it is now empty).  This way it never over-estimates
+     * the distance, and the value of its estimate does not suddenly increase once a resource is emptied out.
+     * The heuristic then decreases from the resource cost estimate based on features of the peasants that would
+     * indicate that they have just moved next to a resource, collected, gone back to the town-center with a full capacity,
+     * or deposited.  Penalty costs are added if the peasants are out of sync or are continuing to collect a resource
+     * even after meeting the required amount.
      *
      * @return The value estimated remaining cost to reach a goal state from this state.
      */
