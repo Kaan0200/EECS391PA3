@@ -64,7 +64,7 @@ public class StripsDeposit_3 implements StripsAction{
 	
 	@Override
 	public String toString() {
-		return "DEPOSIT_2 P" + depositer.id + "&" + depositer2.id + "&" + depositer3.id + " " + resourceType + 
+		return "DEPOSIT_3 P" + depositer.id + "&" + depositer2.id + "&" + depositer3.id + " " + resourceType + 
 				" TO TOWNHALL - CG:" + curGold + " CW:" + curWood;
 	}
 	
