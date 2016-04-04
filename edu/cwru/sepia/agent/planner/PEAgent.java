@@ -115,6 +115,11 @@ public class PEAgent extends Agent {
 				for (ActionResult result : results.values()) {
 					if (result.getFeedback().toString().equals("INCOMPLETE")) {
 						stillExecuting = true;
+					} else if (result.getFeedback().toString().equals("FAILED")){
+						// if the peasants are getting in their ways they should repeat to completion
+						System.err.println("ACTION FAILED, REPEATING FAILED ACTION");
+						sepiaActions.put(result.getAction().getUnitId(), result.getAction());
+						return sepiaActions;
 					}
 				}
 			}
@@ -184,6 +189,8 @@ public class PEAgent extends Agent {
         	//StripsBuildPeasant build = (StripsBuildPeasant) action;
         	returnAction.add(Action.createPrimitiveProduction(townhallId, peasantTemplateId));
         	
+        	// Using to make sure that both peasants are BOTH next to resource before gathering
+        	// removes any issues from compound move when both attempt to move to same location
         } else if (action instanceof StripsMove_2) {
         	StripsMove_2 move = (StripsMove_2) action;
         	if (move.getLocation() == null){
@@ -201,8 +208,6 @@ public class PEAgent extends Agent {
         } else if (action instanceof StripsCollect_2) {
         	StripsCollect_2 collect = (StripsCollect_2) action;
         	returnAction.add(Action.createCompoundGather(peasantIdMap.get(collect.getCollector().id), collect.getCollection().id));
-        	// Using to make sure that both peasants are BOTH next to resource before gathering
-        	// removes any issues from compound move when both attempt to move to same location
         	returnAction.add(Action.createCompoundGather(peasantIdMap.get(collect.getCollector2().id), collect.getCollection().id));
         	
         } else if (action instanceof StripsDeposit_2) {
