@@ -188,21 +188,32 @@ public class PEAgent extends Agent {
         	StripsMove_2 move = (StripsMove_2) action;
         	if (move.getLocation() == null){
         		returnAction.add (
-        				Action.createCompoundMove(move.getMover().id,
+        				Action.createCompoundMove(peasantIdMap.get(move.getMover().id),
         						state.getUnit(townhallId).getXPosition(),
         						state.getUnit(townhallId).getYPosition()));
-        		returnAction.add (Action.createCompoundMove(move.getMover2().id,
+        		returnAction.add (Action.createCompoundMove(peasantIdMap.get(move.getMover2().id),
 						state.getUnit(townhallId).getXPosition(),
 						state.getUnit(townhallId).getYPosition()));
         	} else {
         		returnAction.add(Action.createCompoundMove(peasantIdMap.get(move.getMover().id), move.getLocation().pos.x, move.getLocation().pos.y));
         		returnAction.add(Action.createCompoundMove(peasantIdMap.get(move.getMover2().id),move.getLocation().pos.x, move.getLocation().pos.y));
         	}
-        }else if (action instanceof StripsCollect_2) {
+        } else if (action instanceof StripsCollect_2) {
+        	StripsCollect_2 collect = (StripsCollect_2) action;
+        	returnAction.add(Action.createCompoundGather(peasantIdMap.get(collect.getCollector().id), collect.getCollection().id));
+        	// Using to make sure that both peasants are BOTH next to resource before gathering
+        	// removes any issues from compound move when both attempt to move to same location
+        	returnAction.add(Action.createCompoundGather(peasantIdMap.get(collect.getCollector2().id), collect.getCollection().id));
         	
-        }else if (action instanceof StripsDeposit_2) {
+        } else if (action instanceof StripsDeposit_2) {
+        	StripsDeposit_2 deposit = (StripsDeposit_2) action;
+        	returnAction.add(Action.createCompoundDeposit(peasantIdMap.get(deposit.getDepositer().id),
+        			state.getUnit(townhallId).getID()));
+
+        	returnAction.add(Action.createCompoundDeposit(peasantIdMap.get(deposit.getDepositer2().id),
+        			state.getUnit(townhallId).getID()));
         	
-        }else if (action instanceof StripsMove_3) {
+        } else if (action instanceof StripsMove_3) {
         	StripsMove_3 move = (StripsMove_3) action;
         	if (move.getLocation() == null){
         		returnAction.add (Action.createCompoundMove(peasantIdMap.get(move.getMover().id),
