@@ -391,7 +391,7 @@ public class GameState implements Comparable<GameState> {
     		break;
     	}
     	
-        return Math.round((totalResourceCost * 2/3.0) * 100.0)/100.0;
+        return Math.round((totalResourceCost * 2/3.0) * 10000.0)/10000.0;
     }
 
     /**
@@ -556,6 +556,9 @@ public class GameState implements Comparable<GameState> {
 			if(p1.holding.a == ResourceType.GOLD && 
 					p2.holding.a == ResourceType.GOLD && 
 					p3.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
+				if(goldCost < 15) {
+					System.out.println("Little left");
+				}
 				goldCost -= tripsSaved * distShortestResource;
 			}
 			else if(p1.holding.a == ResourceType.WOOD &&
@@ -574,10 +577,10 @@ public class GameState implements Comparable<GameState> {
 		}
 		
 		//End reductions - make sure that all cost values are positive
-		if(goldCost <= 0) {
+		if(goldCost <= 0 && woodCost > 0) {
 			goldCost = 0;
 		}
-		if(woodCost <= 0) {
+		if(woodCost <= 0 && goldCost > 0) {
 			woodCost = 0;
 		}
 		//Reward depositing
