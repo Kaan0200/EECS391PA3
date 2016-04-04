@@ -79,6 +79,6 @@ public class StripsDeposit_2 implements StripsAction{
 	}
 	
 	public Peasant getDepositer2() {
-		return depositer;
+		return depositer2;
 	}
 }
