@@ -131,7 +131,7 @@ public class PEAgent extends Agent {
     		for (int i = 0; i < next.size(); i++) {
     			System.out.println(next.get(i).toString());
     			// if this is a produce then apply the move to the townhall with ID = 0
-    			sepiaActions.put(next.get(i).getType() == ActionType.PRIMITIVEPRODUCE ? i : i+1 , next.get(i));
+    			sepiaActions.put(next.get(i).getType() == ActionType.PRIMITIVEPRODUCE ? i : peasantIdMap.get(i+1) , next.get(i));
     		}
     	}
     	
