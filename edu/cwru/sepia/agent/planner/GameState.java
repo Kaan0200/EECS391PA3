@@ -556,9 +556,6 @@ public class GameState implements Comparable<GameState> {
 			if(p1.holding.a == ResourceType.GOLD && 
 					p2.holding.a == ResourceType.GOLD && 
 					p3.holding.a == ResourceType.GOLD && (requiredGold - currentGold > 0)) {
-				if(goldCost < 15) {
-					System.out.println("Little left");
-				}
 				goldCost -= tripsSaved * distShortestResource;
 			}
 			else if(p1.holding.a == ResourceType.WOOD &&
