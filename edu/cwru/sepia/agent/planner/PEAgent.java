@@ -188,10 +188,10 @@ public class PEAgent extends Agent {
         	StripsMove_2 move = (StripsMove_2) action;
         	if (move.getLocation() == null){
         		returnAction.add (
-        				Action.createCompoundMove(move.getMover().id,
+        				Action.createCompoundMove(peasantIdMap.get(move.getMover().id),
         						state.getUnit(townhallId).getXPosition(),
         						state.getUnit(townhallId).getYPosition()));
-        		returnAction.add (Action.createCompoundMove(move.getMover2().id,
+        		returnAction.add (Action.createCompoundMove(peasantIdMap.get(move.getMover2().id),
 						state.getUnit(townhallId).getXPosition(),
 						state.getUnit(townhallId).getYPosition()));
         	} else {
