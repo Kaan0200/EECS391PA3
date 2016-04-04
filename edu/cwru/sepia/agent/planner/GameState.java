@@ -39,7 +39,6 @@ public class GameState implements Comparable<GameState> {
 	public int cost;
 	// are we allowing building of more peasants?
 	public boolean allowBuildPeasants;
-	public int maxPeasants = 2;
 	//-------------------DYNAMIC VALUES---------------------//
 	// current values of resources
 	public int currentGold, currentWood;
